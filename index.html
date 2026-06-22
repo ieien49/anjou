@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mon canton et mes services — Maine-et-Loire</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Marianne:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bleu:    #1E22AE;
+    --bleu-d:  #15187D;
+    --bleu-m:  #3A3FD0;
+    --bleu-l:  #ECEDFB;
+    --or:      #C8922A;
+    --or-l:    #FDF3E3;
+    --blanc:   #FFFFFF;
+    --fond:    #F4F5F9;
+    --gris1:   #E4E8EF;
+    --gris2:   #8A93A3;
+    --gris3:   #4A5568;
+    --noir:    #1A202C;
+    --rouge:   #C0392B;
+    --vert:    #1A7A4A;
+    --orange:  #E67E22;
+    --r:       12px;
+    --rs:      8px;
+    --maxw:    1180px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--fond);
+    color: var(--noir);
+    line-height: 1.5;
+  }
+  a { color: inherit; }
+
+  /* ── Bandeau institutionnel ── */
+  #site-banner {
+    background: var(--bleu);
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 0;
+  }
+  #site-banner .inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: rgba(255,255,255,0.85);
+  }
+
+  #site-header {
+    background: #fff;
+    border-bottom: 1px solid var(--gris1);
+  }
+  #site-header .inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .brand-badge {
+    width: 42px; height: 42px;
+    background: var(--bleu);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-badge svg { width: 22px; height: 22px; fill: #fff; }
+  .brand-text-title { font-size: 13px; font-weight: 700; color: var(--bleu); letter-spacing: 0.04em; text-transform: uppercase; }
+  .brand-text-sub { font-size: 11px; color: var(--gris2); letter-spacing: 0.03em; }
+  .header-tagline {
+    font-size: 13px;
+    color: var(--gris3);
+    text-align: right;
+    max-width: 360px;
+    display: none;
+  }
+  @media (min-width: 860px) { .header-tagline { display: block; } }
+
+  /* ── Fil d'ariane / titre page ── */
+  #page-title-zone {
+    background: linear-gradient(135deg, var(--bleu) 0%, var(--bleu-d) 100%);
+    color: #fff;
+    padding: 28px 0 32px;
+  }
+  #page-title-zone .inner { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  .breadcrumb { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 10px; }
+  .breadcrumb a { text-decoration: none; color: rgba(255,255,255,0.7); }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .page-title { font-size: 26px; font-weight: 700; margin: 0 0 6px; }
+  .page-subtitle { font-size: 14px; color: rgba(255,255,255,0.85); max-width: 640px; }
+
+  /* ── Barre adresse ── */
+  #locate-bar {
+    background: #fff;
+    border-bottom: 1px solid var(--gris1);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  #locate-bar .inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .locate-search {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+  }
+  .locate-search-bar {
+    background: var(--fond);
+    border: 1.5px solid var(--gris1);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    height: 42px;
+  }
+  .locate-search-bar:focus-within { border-color: var(--bleu-m); }
+  .locate-search-bar input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--noir);
+  }
+  .locate-search-bar svg { width: 16px; height: 16px; fill: var(--gris2); flex-shrink: 0; }
+  #suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border-radius: var(--rs);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    display: none;
+    overflow: hidden;
+    z-index: 60;
+  }
+  .sugg-item {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--gris3);
+    border-bottom: 1px solid var(--gris1);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sugg-item:last-child { border-bottom: none; }
+  .sugg-item:hover { background: var(--bleu-l); }
+  .sugg-item svg { width: 14px; height: 14px; fill: var(--gris2); flex-shrink: 0; }
+
+  .geo-btn, .clear-btn {
+    background: var(--bleu);
+    color: #fff;
+    border: none;
+    border-radius: 21px;
+    height: 42px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .geo-btn:hover { background: var(--bleu-d); }
+  .geo-btn svg { width: 16px; height: 16px; fill: #fff; }
+  .clear-btn {
+    background: var(--fond);
+    color: var(--gris3);
+    border: 1.5px solid var(--gris1);
+  }
+  .clear-btn:hover { background: var(--gris1); }
+
+  #current-addr {
+    font-size: 12px;
+    color: var(--gris2);
+    display: none;
+    align-items: center;
+    gap: 6px;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 24px 12px;
+  }
+  #current-addr svg { width: 13px; height: 13px; fill: var(--bleu); flex-shrink: 0; }
+  #current-addr strong { color: var(--noir); font-weight: 600; }
+
+
+
+
+  /* ── Layout principal ── */
+  #main {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    #main { grid-template-columns: 1fr; }
+  }
+
+#main.sidebar-collapsed > aside { display: none; }
+#main.sidebar-collapsed { grid-template-columns: 1fr; }
+
+  #status-banner {
+    grid-column: 1 / -1;
+    padding: 11px 16px;
+    border-radius: var(--rs);
+    font-size: 13px;
+    display: none;
+  }
+  #status-banner.loading { background: var(--bleu-l); color: var(--bleu); }
+  #status-banner.error { background: #FDECEA; color: var(--rouge); }
+
+  .spinner {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Colonne gauche : canton ── */
+  .side-card {
+    background: #fff;
+    border: 1px solid var(--gris1);
+    border-radius: var(--r);
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 12px;
+  }
+  .canton-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .canton-icon {
+    width: 44px; height: 44px; flex-shrink: 0;
+    background: var(--bleu-l);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .canton-icon svg { width: 22px; height: 22px; fill: var(--bleu); }
+  .canton-nom { font-size: 19px; font-weight: 700; color: var(--bleu); line-height: 1.2; }
+  .canton-code { font-size: 12px; color: var(--gris2); margin-top: 2px; }
+  .canton-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--bleu-l); color: var(--bleu-m);
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    margin-top: 8px;
+  }
+  .canton-pill svg { width: 10px; height: 10px; fill: var(--bleu-m); }
+
+  #canton-map-wrap {
+    border-radius: var(--rs);
+    overflow: hidden;
+    border: 1px solid var(--gris1);
+    height: 200px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  #canton-map { width: 100%; height: 100%; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; display: none; }
+  .stat-box { background: var(--fond); border-radius: var(--rs); padding: 12px; text-align: center; }
+  .stat-num { font-size: 21px; font-weight: 700; color: var(--bleu); }
+  .stat-lbl { font-size: 10px; color: var(--gris2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+  .elu-card {
+    background: var(--fond);
+    border-radius: var(--rs);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .elu-avatar {
+    width: 38px; height: 38px; flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--bleu);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .elu-name { font-size: 13px; font-weight: 700; color: var(--noir); }
+  .elu-detail { font-size: 11px; color: var(--gris2); margin-top: 1px; line-height: 1.4; }
+
+  .communes-list { max-height: 280px; overflow-y: auto; }
+  .commune-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid var(--gris1); font-size: 12px;
+  }
+  .commune-row:last-child { border-bottom: none; }
+  .commune-pop { font-weight: 700; color: var(--bleu-m); background: var(--bleu-l); padding: 2px 7px; border-radius: 6px; font-size: 11px; flex-shrink: 0; margin-left: 8px; }
+
+  .empty-state {
+    text-align: center; padding: 24px 12px;
+  }
+  .empty-icon {
+    width: 48px; height: 48px; margin: 0 auto 10px;
+    background: var(--bleu-l); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .empty-icon svg { width: 22px; height: 22px; fill: var(--bleu); }
+  .empty-title { font-size: 14px; font-weight: 700; color: var(--noir); margin-bottom: 4px; }
+  .empty-sub { font-size: 12px; color: var(--gris2); line-height: 1.5; }
+
+  /* ── Colonne droite : services en sections ── */
+  .service-section {
+    background: #fff;
+    border: 1px solid var(--gris1);
+    border-radius: var(--r);
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .service-section-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--gris1);
+  }
+  .ssec-icon {
+    width: 36px; height: 36px; flex-shrink: 0; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ssec-icon svg { width: 18px; height: 18px; }
+  .ssec-title { font-size: 15px; font-weight: 700; color: var(--noir); }
+  .service-section-body { padding: 16px 18px; }
+
+  .subsection { margin-bottom: 18px; }
+  .subsection:last-child { margin-bottom: 0; }
+  .subsection-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris2); margin-bottom: 10px; }
+
+  .subsection.accordion { margin-bottom: 8px; border: 1px solid var(--gris1); border-radius: var(--rs); overflow: hidden; }
+  .subsection.accordion:last-child { margin-bottom: 0; }
+  .subsection-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    cursor: pointer;
+    background: var(--fond);
+    user-select: none;
+  }
+  .subsection-header:hover { background: var(--bleu-l); }
+  .subsection-header .subsection-title { margin-bottom: 0; }
+  .subsection-arrow {
+    width: 16px; height: 16px; fill: var(--gris2);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .subsection-arrow.open { transform: rotate(180deg); }
+  .subsection-content { padding: 14px; display: none; }
+  .subsection-content.open { display: block; }
+
+  .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 700px) { .item-grid { grid-template-columns: 1fr; } }
+
+  .pe-item {
+    background: var(--fond);
+    border-radius: var(--rs);
+    padding: 12px 13px;
+  }
+  .pe-item-name { font-size: 13px; font-weight: 700; color: var(--noir); margin-bottom: 2px; }
+  .pe-item-type { font-size: 11px; font-weight: 600; color: var(--bleu-m); margin-bottom: 4px; }
+  .pe-item-detail { font-size: 11px; color: var(--gris2); line-height: 1.5; }
+  .pe-item-detail a { color: var(--bleu); }
+  .pe-distance { float: right; font-size: 10px; font-weight: 700; color: var(--or); background: var(--or-l); padding: 2px 6px; border-radius: 6px; margin-left: 8px; }
+  .pe-empty, .pe-error { font-size: 12px; padding: 6px 0; }
+  .pe-empty { color: var(--gris2); }
+  .pe-error { color: var(--rouge); }
+
+  .contact-card {
+    background: var(--fond);
+    border-radius: var(--rs);
+    padding: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .contact-icon {
+    width: 40px; height: 40px; flex-shrink: 0;
+    background: var(--bleu-l);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .contact-icon svg { width: 20px; height: 20px; fill: var(--bleu); }
+  .contact-name { font-size: 13px; font-weight: 700; color: var(--noir); }
+  .contact-detail { font-size: 12px; color: var(--gris3); line-height: 1.8; margin-top: 4px; }
+  .contact-detail a { color: var(--bleu); font-weight: 600; text-decoration: none; }
+
+  .trafic-item {
+    background: var(--fond);
+    border-radius: var(--rs);
+    padding: 11px 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .trafic-item:last-child { margin-bottom: 0; }
+  .trafic-route { font-size: 13px; font-weight: 700; color: var(--noir); }
+  .trafic-sub { font-size: 11px; color: var(--gris2); }
+  .trafic-badge {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 11px; font-weight: 700;
+    padding: 4px 9px; border-radius: 8px;
+    background: var(--or-l); color: var(--or);
+  }
+
+  .alerte-item {
+    background: var(--fond);
+    border-radius: var(--rs);
+    padding: 12px 13px;
+    margin-bottom: 8px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .alerte-item:last-child { margin-bottom: 0; }
+  .alerte-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; background: var(--orange); }
+  .alerte-titre { font-size: 12.5px; font-weight: 700; color: var(--noir); margin-bottom: 2px; }
+  .alerte-desc { font-size: 11.5px; color: var(--gris2); line-height: 1.5; }
+
+  .route-ok-box {
+    background: #e8f5ee; border-radius: var(--rs); padding: 13px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .route-ok-box svg { width: 18px; height: 18px; fill: var(--vert); flex-shrink: 0; }
+  .route-ok-box span { font-size: 13px; color: var(--vert); font-weight: 600; }
+
+  .fallback-box {
+    background: var(--or-l); border-radius: var(--rs); padding: 12px 13px;
+    font-size: 12px; color: var(--gris3); line-height: 1.5;
+  }
+  .fallback-box a { color: var(--bleu); font-weight: 600; }
+
+  .links-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ext-link {
+    background: var(--fond); border: 1px solid var(--gris1); border-radius: var(--rs);
+    padding: 9px 12px; text-decoration: none; font-size: 12px; font-weight: 600;
+    color: var(--gris3); display: flex; align-items: center; gap: 6px;
+  }
+  .ext-link:hover { background: var(--bleu-l); }
+  .ext-link svg { width: 13px; height: 13px; fill: var(--bleu); flex-shrink: 0; }
+
+  /* ── Briques de navigation ── */
+  #briques-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 1000px) { #briques-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 700px)  { #briques-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .brique {
+    background: #fff;
+    border: 1px solid var(--gris1);
+    border-radius: var(--r);
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  }
+  .brique:hover {
+    border-color: var(--bleu-m);
+    box-shadow: 0 4px 14px rgba(30,34,174,0.10);
+    transform: translateY(-1px);
+  }
+  .brique-icon {
+    width: 52px; height: 52px;
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .brique-icon svg { width: 26px; height: 26px; }
+  .brique-label { font-size: 13px; font-weight: 700; color: var(--noir); line-height: 1.3; }
+  .brique-count {
+    font-size: 10px; font-weight: 700;
+    color: var(--bleu-m); background: var(--bleu-l);
+    padding: 2px 8px; border-radius: 10px;
+    display: none;
+  }
+  .brique-count.visible { display: inline-block; }
+
+  #back-to-briques {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--bleu);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    margin-bottom: 16px;
+  }
+  #back-to-briques:hover { text-decoration: underline; }
+  #back-to-briques svg { width: 16px; height: 16px; fill: var(--bleu); }
+
+  .service-section[data-theme] { display: none; }
+  .service-section[data-theme].theme-active { display: block; }
+
+  footer {
+    background: var(--bleu-d);
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    padding: 22px 0;
+    margin-top: 40px;
+  }
+  footer .inner { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  footer a { color: rgba(255,255,255,0.85); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  
+  @media (max-width: 800px) {
+  .routes-grid { grid-template-columns: 1fr !important; }
+}
+
+
+</style>
+</head>
+<body>
+
+<div id="site-banner">
+  <div class="inner">
+    <span>Département de Maine-et-Loire</span>
+    <span>maine-et-loire.fr</span>
+  </div>
+</div>
+
+<header id="site-header">
+  <div class="inner">
+    <a class="brand" href="#">
+      <div class="brand-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      </div>
+      <div>
+        <div class="brand-text-title">Maine-et-Loire</div>
+        <div class="brand-text-sub">Le Département vous accompagne</div>
+      </div>
+    </a>
+    <div class="header-tagline">Outil de localisation des services départementaux</div>
+  </div>
+</header>
+
+<div id="page-title-zone">
+  <div class="inner">
+    <div class="breadcrumb"><a href="#">Accueil</a> &nbsp;›&nbsp; Mon canton et mes services</div>
+    <h1 class="page-title">Mon canton et mes services</h1>
+    <div class="page-subtitle">Renseignez une adresse ou utilisez votre position pour identifier votre canton, vos élus et les services du Département à proximité.</div>
+  </div>
+</div>
+
+<div id="locate-bar">
+  <div class="inner">
+    <div class="locate-search">
+      <div class="locate-search-bar">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input id="addr-input" type="text" placeholder="Saisissez une adresse en Maine-et-Loire…" autocomplete="off" />
+      </div>
+      <div id="suggestions"></div>
+    </div>
+    <button class="geo-btn" id="geo-btn">
+      <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+      Me géolocaliser
+    </button>
+    <button class="clear-btn" id="clear-btn" style="display:none">Effacer</button>
+  </div>
+  <div id="current-addr">
+    <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    <span>Adresse retenue : <strong id="current-addr-text">—</strong></span>
+  </div>
+</div>
+
+<div id="main">
+
+  <div id="status-banner"></div>
+
+  <!-- ── Colonne gauche : Canton ── -->
+
+  <aside id="canton-sidebar">
+    <div class="side-card">
+      <div class="card-label">Mon canton</div>
+      <div id="canton-card" style="display:none">
+        <div class="canton-header">
+          <div class="canton-icon">
+            <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+          </div>
+          <div>
+            <div id="canton-nom" class="canton-nom">—</div>
+            <div id="canton-code" class="canton-code"></div>
+            <div class="canton-pill">
+              <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              Maine-et-Loire · 49
+            </div>
+          </div>
+        </div>
+        <div id="canton-map-wrap"><div id="canton-map"></div></div>
+        <div class="stat-grid" id="canton-stats">
+          <div class="stat-box"><div class="stat-num" id="stat-pop">—</div><div class="stat-lbl">Habitants</div></div>
+          <div class="stat-box"><div class="stat-num" id="stat-communes">—</div><div class="stat-lbl">Communes</div></div>
+        </div>
+      </div>
+      <div id="empty-canton" class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+        </div>
+        <div class="empty-title">Aucune adresse renseignée</div>
+        <div class="empty-sub">Saisissez une adresse ou utilisez la géolocalisation pour identifier votre canton.</div>
+      </div>
+    </div>
+
+    <div class="side-card" id="elus-card" style="display:none">
+      <div class="card-label">Conseillers départementaux</div>
+      <div id="elus-list"></div>
+    </div>
+
+    <div class="side-card" id="communes-card" style="display:none">
+      <div class="card-label">Communes du canton</div>
+      <div class="communes-list" id="canton-communes-list"></div>
+    </div>
+  </aside>
+
+  <!-- ── Colonne droite : Services ── -->
+  <div id="services-col">
+
+    <div id="briques-grid">
+      <div class="brique" data-theme="routes">
+        <div class="brique-icon" style="background:var(--bleu-l)"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5S15.67 14 16.5 14s1.5.67 1.5 1.5S17.33 17 16.5 17zM18 11H6V6h12v5z"/></svg></div>
+        <div class="brique-label">Routes & mobilité</div>
+      </div>
+      <div class="brique" data-theme="enfance">
+        <div class="brique-icon" style="background:#e8f5ee"><svg viewBox="0 0 24 24" style="fill:var(--vert)"><circle cx="12" cy="5" r="2"/><path d="M12 8C9.33 8 4 9.34 4 12v2h16v-2c0-2.66-5.33-4-8-4z"/><path d="M4 15v4h16v-4H4z"/></svg></div>
+        <div class="brique-label">Petite enfance</div>
+      </div>
+      <div class="brique" data-theme="college">
+        <div class="brique-icon" style="background:var(--bleu-l)"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M12 3L1 9l4 2.18V17h2v-4.82l1 .55V17c0 2.21 3.58 4 8 4s8-1.79 8-4v-4.27L23 9 12 3z"/></svg></div>
+        <div class="brique-label">Collège</div>
+      </div>
+      <div class="brique" data-theme="social">
+        <div class="brique-icon" style="background:var(--or-l)"><svg viewBox="0 0 24 24" style="fill:var(--or)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+        <div class="brique-label">Social & solidarité</div>
+      </div>
+      <div class="brique" data-theme="autonomie">
+        <div class="brique-icon" style="background:var(--or-l)"><svg viewBox="0 0 24 24" style="fill:var(--or)"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg></div>
+        <div class="brique-label">Autonomie</div>
+      </div>
+      <div class="brique" data-theme="environnement">
+        <div class="brique-icon" style="background:#e8f5ee"><svg viewBox="0 0 24 24" style="fill:var(--vert)"><path d="M17 8C8 10 5.9 16.17 3.82 21L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 2-11 5 2.4-2.68 6.8-4 13-4.01C24 4 20.83 6 17 8z"/></svg></div>
+        <div class="brique-label">Environnement</div>
+      </div>
+      <div class="brique" data-theme="culture">
+        <div class="brique-icon" style="background:#f3e8f9"><svg viewBox="0 0 24 24" style="fill:#7b3fa0"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm-7 9.18V16l7 3.82 7-3.82v-3.82L12 16l-7-3.82z"/></svg></div>
+        <div class="brique-label">Culture & patrimoine</div>
+      </div>
+      <div class="brique" data-theme="infos">
+        <div class="brique-icon" style="background:var(--bleu-l)"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+        <div class="brique-label">Infos pratiques</div>
+      </div>
+    </div>
+
+    <button id="back-to-briques" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Retour aux thèmes
+    </button>
+
+    <!-- Routes & mobilité -->
+<section class="service-section" data-theme="routes">
+  <div class="service-section-header">
+    <div class="ssec-icon" style="background:var(--bleu-l)"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5S15.67 14 16.5 14s1.5.67 1.5 1.5S17.33 17 16.5 17zM18 11H6V6h12v5z"/></svg></div>
+    <div class="ssec-title">Routes & mobilité</div>
+  </div>
+  <div class="service-section-body">
+<div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+
+      <!-- Colonne gauche : carte -->
+      <div>
+        <div class="subsection-title" style="margin-bottom:8px">Réseau routier départemental du canton</div>
+        <div id="routes-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+          <div id="routes-map" style="width:100%;height:100%;"></div>
+        </div>
+        <div id="routes-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
+          <span style="display:inline-block;width:20px;height:3px;background:#1E22AE;vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Routes départementales
+        </div>
+        <div id="routes-map-empty" style="display:none;" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+      </div>
+
+      <!-- Colonne droite : infos -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div>
+          <div class="subsection-title" style="margin-bottom:8px">Alertes en cours</div>
+          <div id="routes-alertes"><div class="pe-empty"><span class="spinner"></span> Chargement…</div></div>
+        </div>
+
+        <div>
+          <div class="subsection-title" style="margin-bottom:8px">Agence technique de rattachement</div>
+          <div class="contact-card">
+            <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></div>
+            <div>
+              <div class="contact-name" id="atd-nom">Identifiez une adresse</div>
+              <div class="contact-detail" id="atd-detail">Connaître l'agence de rattachement nécessite une adresse.</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="subsection-title" style="margin-bottom:8px">Liens utiles</div>
+          <div class="links-row">
+            <a class="ext-link" href="https://www.inforoutes49.fr" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><path d="M1.5 1h21l-1.5 14-9 4-9-4L1.5 1zM12 3.5l-7 3 .75 7.25L12 15.75l6.25-2 .75-7.25-7-3z"/></svg>
+              Inforoutes 49
+            </a>
+            <a class="ext-link" href="https://meteofrance.com/previsions-meteo-france/angers/49000" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+              Météo France
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+    <!-- Enfance -->
+    <section class="service-section" data-theme="enfance">
+      <div class="service-section-header">
+        <div class="ssec-icon" style="background:#e8f5ee"><svg viewBox="0 0 24 24" style="fill:var(--vert)"><circle cx="12" cy="5" r="2"/><path d="M12 8C9.33 8 4 9.34 4 12v2h16v-2c0-2.66-5.33-4-8-4z"/><path d="M4 15v4h16v-4H4z"/></svg></div>
+        <div class="ssec-title">Petite enfance</div>
+      </div>
+      <div class="service-section-body">
+        <div class="subsection">
+          <div class="subsection-title">Établissements d'accueil (10 km)</div>
+          <div class="item-grid" id="pe-eaje"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Lieux d'accueil enfants-parents</div>
+          <div class="item-grid" id="pe-laep"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Relais petite enfance</div>
+          <div class="item-grid" id="pe-rpe"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Maisons d'assistants maternels (10 km)</div>
+          <div class="item-grid" id="pe-mam"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Garde à domicile agréée (département)</div>
+          <div class="item-grid" id="pe-gad"><div class="pe-empty"><span class="spinner"></span> Chargement…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Collège -->
+    <section class="service-section" data-theme="college">
+      <div class="service-section-header">
+        <div class="ssec-icon" style="background:var(--bleu-l)"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M12 3L1 9l4 2.18V17h2v-4.82l1 .55V17c0 2.21 3.58 4 8 4s8-1.79 8-4v-4.27L23 9 12 3z"/></svg></div>
+        <div class="ssec-title">Collège</div>
+      </div>
+      <div class="service-section-body">
+<div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+
+  <!-- Colonne gauche : carte -->
+  <div>
+    <div class="subsection-title" style="margin-bottom:8px">Collèges publics et privés du canton</div>
+    <div id="college-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+      <div id="college-map" style="width:100%;height:100%;"></div>
+    </div>
+    <div id="college-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1E22AE;vertical-align:middle;margin-right:4px;"></span>Collège public
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7b3fa0;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Collège privé
+    </div>
+    <div id="college-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+  </div>
+
+  <!-- Colonne droite : infos -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Collège public de secteur</div>
+      <div id="college-card"><div class="pe-empty">Identifiez une adresse pour trouver votre collège de secteur.</div></div>
+    </div>
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Collèges publics du canton</div>
+      <div id="college-public-list"><div class="pe-empty">Identifiez une adresse…</div></div>
+    </div>
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Collèges privés du canton</div>
+      <div id="college-prive-list"><div class="pe-empty">Identifiez une adresse…</div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+    </section>
+
+    <!-- Social & solidarité -->
+    <section class="service-section" data-theme="social">
+      <div class="service-section-header">
+        <div class="ssec-icon" style="background:var(--or-l)"><svg viewBox="0 0 24 24" style="fill:var(--or)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+        <div class="ssec-title">Social & solidarité</div>
+      </div>
+      <div class="service-section-body">
+        <div class="subsection">
+          <div class="subsection-title">Maison du Département des Solidarités</div>
+          <div id="mds-card">
+            <div class="pe-empty">Votre Maison du Département apparaîtra ici une fois l'adresse identifiée.</div>
+          </div>
+          <div id="mds-annexes-card" style="margin-top:10px"></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Centre de santé sexuelle (30 km)</div>
+          <div class="item-grid" id="css-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Autonomie -->
+    <section class="service-section" data-theme="autonomie">
+      <div class="service-section-header">
+        <div class="ssec-icon" style="background:var(--or-l)"><svg viewBox="0 0 24 24" style="fill:var(--or)"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg></div>
+        <div class="ssec-title">Autonomie</div>
+      </div>
+      <div class="service-section-body">
+        <div class="subsection">
+          <div class="subsection-title">Maison de l'Autonomie</div>
+          <div class="contact-card">
+            <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg></div>
+            <div>
+              <div class="contact-name">Maison de l'Autonomie (MDA)</div>
+              <div class="contact-detail">
+                6 rue Jean-Lecuit — 49000 Angers<br>
+                <a href="tel:+33241816077">02 41 81 60 77</a><br>
+                <a href="mailto:contact@mda.maine-et-loire.fr">contact@mda.maine-et-loire.fr</a><br>
+                <a href="https://www.mda.maine-et-loire.fr" target="_blank" rel="noopener">Site web →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Foyers d'hébergement (30 km)</div>
+          <div class="item-grid" id="fh-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Foyers de vie (30 km)</div>
+          <div class="item-grid" id="fv-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Environnement -->
+    <section class="service-section" data-theme="environnement">
+      <div class="service-section-header">
+        <div class="ssec-icon" style="background:#e8f5ee"><svg viewBox="0 0 24 24" style="fill:var(--vert)"><path d="M17 8C8 10 5.9 16.17 3.82 21L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 2-11 5 2.4-2.68 6.8-4 13-4.01C24 4 20.83 6 17 8z"/></svg></div>
+        <div class="ssec-title">Environnement</div>
+      </div>
+      <div class="service-section-body">
+        <div class="subsection">
+  <div class="subsection-title">Espaces naturels sensibles (10 km)</div>
+  <div id="ens-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:220px;margin-bottom:12px;display:none;">
+    <div id="ens-map" style="width:100%;height:100%;"></div>
+  </div>
+  <div class="item-grid" id="ens-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+</div>
+        <div class="subsection">
+          <div class="subsection-title">Circuits de randonnée — PDIPR (10 km)</div>
+          <div class="item-grid" id="pdipr-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">Écluses et maisons éclusières (30 km)</div>
+          <div class="item-grid" id="ecluses-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Culture -->
+    <section class="service-section" data-theme="culture">
+      <div class="service-section-header">
+        <div class="ssec-icon" style="background:#f3e8f9"><svg viewBox="0 0 24 24" style="fill:#7b3fa0"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm-7 9.18V16l7 3.82 7-3.82v-3.82L12 16l-7-3.82z"/></svg></div>
+        <div class="ssec-title">Culture & patrimoine</div>
+      </div>
+      <div class="service-section-body">
+        <div class="subsection">
+          <div class="subsection-title">Musées à proximité (30 km)</div>
+          <div class="item-grid" id="musees-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Infos pratiques -->
+    <section class="service-section" data-theme="infos">
+      <div class="service-section-header">
+        <div class="ssec-icon" style="background:var(--bleu-l)"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+        <div class="ssec-title">Infos pratiques</div>
+      </div>
+      <div class="service-section-body">
+        <div class="contact-card">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></div>
+          <div>
+            <div class="contact-name">Département de Maine-et-Loire</div>
+            <div class="contact-detail">
+              CS 94104 — 49941 Angers Cedex 9<br>
+              <a href="tel:+33241814949">02 41 81 49 49</a><br>
+              <a href="mailto:info@maine-et-loire.fr">info@maine-et-loire.fr</a><br>
+              <a href="https://www.maine-et-loire.fr" target="_blank" rel="noopener">maine-et-loire.fr →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /services-col -->
+
+</div><!-- /main -->
+
+<footer>
+  <div class="inner">
+    <span>© Département de Maine-et-Loire — Outil indépendant de consultation des données publiques</span>
+    <span>Données : <a href="https://data.maine-et-loire.fr" target="_blank" rel="noopener">data.maine-et-loire.fr</a></span>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── APIs ─────────────────────────────────────────────
+const ODS_BASE     = "https://data.maine-et-loire.fr/api/explore/v2.1/catalog/datasets";
+const ODS_CANTONS  = ODS_BASE + "/224900019_cantons-de-maine-et-loire/records";
+const ODS_MDS      = ODS_BASE + "/224900019_territoire-des-maisons-departementales-des-solidarites-maine-et-loire/records";
+const ODS_COLLEGES = ODS_BASE + "/224900019_sectorisation-colleges-publics-maine-et-loire/records";
+const ODS_COLLEGES_PRIVES = ODS_BASE + "/224900019_colleges-prives-de-maine-et-loire/records";
+const ODS_COLLEGES_PUBLICS = ODS_BASE + "/224900019_colleges-publics-de-maine-et-loire/records";
+const ODS_ENS = ODS_BASE + "/224900019_espaces-naturels-sensibles-en-maine-et-loire/records";
+const ODS_MUSEES = ODS_BASE + "/224900019_musees-en-maine-et-loire/exports/geojson";
+const ODS_CSS = ODS_BASE + "/224900019_centres-de-planification-et-deducation-familiale-en-maine-et-loire/records";
+const ODS_MDS_ANNEXES = ODS_BASE + "/224900019_sites-annexes-des-mds-du-departement-de-maine-et-loire/records";
+const ODS_FH = ODS_BASE + "/224900019_foyers-dhebergement-en-maine-et-loire/records";
+const ODS_FV = ODS_BASE + "/224900019_foyers-de-vie-en-maine-et-loire/records";
+const ODS_ATD      = ODS_BASE + "/224900019_territoire-des-agences-techniques-du-departement-de-maine-et-loire/records";
+const ODS_TRAFIC   = ODS_BASE + "/224900019_trafic-des-routes-departementales-de-maine-et-loire/records";
+const ODS_PDIPR = ODS_BASE + "/224900019_circuits-ditinerance-touristique-en-maine-et-loire/records";
+const ODS_ECLUSES = ODS_BASE + "/224900019_ecluses-et-maisons-declusieres-en-maine-et-loire/records";
+const ODS_EAJE = ODS_BASE + "/224900019_accueils-de-jeunes-enfants-maine-et-loire/records";
+const ODS_LAEP = ODS_BASE + "/224900019_lieux-daccueil-enfants-parents-en-maine-et-loire/records";
+const ODS_RPE  = ODS_BASE + "/224900019_relais-dassistants-maternels-en-maine-et-loire/records";
+const ODS_MAM  = ODS_BASE + "/224900019_maisons-dassistants-maternels-en-maine-et-loire/records";
+const ODS_GAD  = ODS_BASE + "/224900019_organismes-de-garde-a-domicile-agrees-en-maine-et-loire/records";
+const ODS_COMMUNES = ODS_BASE + "/224900019_communes-de-maine-et-loire/exports/geojson";
+
+const NOMINATIM = "https://nominatim.openstreetmap.org/search";
+const INFOROUTES_ALERTES = "https://www.inforoutes49.fr/alertes";
+
+// Contacts ATD par code (données connues)
+const ATD_CONTACTS = {
+  '1': { adresse: 'Angers / Segré' },
+  '2': { adresse: 'Baugé / Saumur' },
+  '3': { adresse: 'Beaupréau / Cholet' },
+};
+
+let savedLat = null, savedLon = null;
+let cantonMap = null;
+let ensMap = null;
+let routesMap = null, routesLayer = null;
+let routesBbox = null;
+let routesResizeObserver = null;
+let routesGeojson = null;
+let routesMapBuilt = false;
+let currentCantonShape = null;
+let peLoaded = false;
+let communesGeojsonCache = null;
+let communesLoadPromise = null;
+let cantonCommunesLayer = null;
+let collegeMap = null;
+let collegeMapBuilt = false;
+let collegeMapData = null;
+let collegeMapResizeObserver = null;
+let collegeCantonLayer = null;
+
+// ── localStorage ─────────────────────────────────────
+function saveAddr(lat, lon, label) {
+  try {
+    localStorage.setItem('dept49_lat', lat);
+    localStorage.setItem('dept49_lon', lon);
+    localStorage.setItem('dept49_label', label);
+  } catch(_) {}
+}
+function clearAddr() {
+  try {
+    localStorage.removeItem('dept49_lat');
+    localStorage.removeItem('dept49_lon');
+    localStorage.removeItem('dept49_label');
+  } catch(_) {}
+}
+function loadSaved() {
+  try {
+    return {
+      lat: parseFloat(localStorage.getItem('dept49_lat')),
+      lon: parseFloat(localStorage.getItem('dept49_lon')),
+      label: localStorage.getItem('dept49_label') || ''
+    };
+  } catch(_) { return null; }
+}
+
+// ── Statut ───────────────────────────────────────────
+function showStatus(msg, type = 'info') {
+  const el = document.getElementById('status-banner');
+  el.innerHTML = type === 'loading' ? `<span class="spinner"></span>${msg}` : msg;
+  el.className = type;
+  el.style.display = 'block';
+}
+function hideStatus() {
+  document.getElementById('status-banner').style.display = 'none';
+}
+
+// ── Haversine ────────────────────────────────────────
+function haversine(la1,lo1,la2,lo2) {
+  const R=6371,d2r=Math.PI/180;
+  const dLa=(la2-la1)*d2r,dLo=(lo2-lo1)*d2r;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*d2r)*Math.cos(la2*d2r)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function dateFr(s) {
+  const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m?`${m[3]}/${m[2]}/${m[1]}`:s;
+}
+function kmLabel(d) {
+  return d < 1 ? `${Math.round(d*1000)} m` : `${d.toFixed(1)} km`;
+}
+function parseGeoPoint(val) {
+  if (!val) return null;
+  if (typeof val === 'object') {
+    const lat = val.lat ?? val.latitude;
+    const lon = val.lon ?? val.longitude;
+    if (lat != null && lon != null) return { lat: parseFloat(lat), lon: parseFloat(lon) };
+  }
+  const m = String(val).match(/([\d.\-]+)[,\s]+([\d.\-]+)/);
+  return m ? { lat: parseFloat(m[1]), lon: parseFloat(m[2]) } : null;
+}
+
+// ── Adresse courante ──────────────────────────────────
+function setAddress(lat, lon, label) {
+  showBriques(); 
+  savedLat = lat; savedLon = lon;
+  saveAddr(lat, lon, label);
+  peLoaded = false;
+  document.getElementById('current-addr').style.display = 'flex';
+  document.getElementById('current-addr-text').textContent = label || `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+  document.getElementById('clear-btn').style.display = 'inline-flex';
+  processCoords(lat, lon, label);
+}
+
+document.getElementById('clear-btn').addEventListener('click', () => {
+  clearAddr();
+  savedLat = null; savedLon = null;
+  document.getElementById('current-addr').style.display = 'none';
+  document.getElementById('clear-btn').style.display = 'none';
+  document.getElementById('addr-input').value = '';
+  resetAllPanels();
+});
+
+function resetAllPanels() {
+  document.getElementById('canton-card').style.display = 'none';
+  document.getElementById('elus-card').style.display = 'none';
+  document.getElementById('routes-map-empty').style.display = 'none';
+  document.getElementById('communes-card').style.display = 'none';
+  document.getElementById('empty-canton').style.display = 'block';
+  hideStatus();
+  if (routesResizeObserver) { routesResizeObserver.disconnect(); routesResizeObserver = null; }
+if (routesMap) { routesMap.remove(); routesMap = null; }
+currentCantonShape = null;
+document.getElementById('routes-map-wrap').style.display = 'none';
+document.getElementById('routes-map-legend').style.display = 'none';
+  if (ensMap) { ensMap.remove(); ensMap = null; }
+document.getElementById('ens-map-wrap').style.display = 'none';
+if (collegeMapResizeObserver) { collegeMapResizeObserver.disconnect(); collegeMapResizeObserver = null; }
+if (collegeMap) { collegeMap.remove(); collegeMap = null; }
+collegeMapBuilt = false;
+collegeMapData = null;
+collegeCantonLayer = null;
+document.getElementById('college-map-wrap').style.display = 'none';
+document.getElementById('college-map-legend').style.display = 'none';
+document.getElementById('college-map-empty').style.display = 'block';
+document.getElementById('college-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
+  ['pe-eaje','pe-laep','pe-rpe','pe-mam','college-public-list','college-prive-list','css-card','fh-card','fv-card',
+   'ens-card','pdipr-card','ecluses-card','musees-card'].forEach(id => {
+    document.getElementById(id).innerHTML = '<div class="pe-empty">Identifiez une adresse…</div>';
+  });
+  document.getElementById('college-card').innerHTML = '<div class="pe-empty">Identifiez une adresse pour trouver votre collège de secteur.</div>';
+  document.getElementById('mds-card').innerHTML = '<div class="pe-empty">Votre Maison du Département apparaîtra ici une fois l\'adresse identifiée.</div>';
+  document.getElementById('mds-annexes-card').innerHTML = '';
+  document.getElementById('routes-alertes').innerHTML = '<div class="pe-empty"><span class="spinner"></span> Identifiez une adresse pour charger les alertes.</div>';
+  document.getElementById('atd-nom').textContent = 'Identifiez une adresse';
+  document.getElementById('atd-detail').textContent = "Connaître l'agence de rattachement nécessite une adresse.";
+}
+
+// ── Recherche / suggestions ───────────────────────────
+let suggestTimer = null;
+function hideSuggestions() {
+  const s = document.getElementById('suggestions');
+  s.style.display = 'none'; s.innerHTML = '';
+}
+async function geocodeAddress(q) {
+  const url = `${NOMINATIM}?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=fr&addressdetails=1`;
+  const res = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
+  if (!res.ok) throw new Error('Géocodage indisponible');
+  return res.json();
+}
+document.getElementById('addr-input').addEventListener('input', e => {
+  clearTimeout(suggestTimer);
+  const q = e.target.value.trim();
+  if (q.length < 3) { hideSuggestions(); return; }
+  suggestTimer = setTimeout(async () => {
+    try {
+      const results = await geocodeAddress(q);
+      const box = document.getElementById('suggestions');
+      if (!results.length) { hideSuggestions(); return; }
+      box.innerHTML = '';
+      results.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'sugg-item';
+        item.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><span>${r.display_name}</span>`;
+        item.addEventListener('click', () => {
+          document.getElementById('addr-input').value = r.display_name;
+          hideSuggestions();
+          setAddress(parseFloat(r.lat), parseFloat(r.lon), r.display_name);
+        });
+        box.appendChild(item);
+      });
+      box.style.display = 'block';
+    } catch(_) {}
+  }, 350);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.locate-search')) hideSuggestions();
+});
+
+// ── Géolocalisation ────────────────────────────────────
+document.getElementById('geo-btn').addEventListener('click', () => {
+  if (!navigator.geolocation) {
+    showStatus("La géolocalisation n'est pas disponible sur ce navigateur.", 'error');
+    return;
+  }
+  const btn = document.getElementById('geo-btn');
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner"></span> Localisation…';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      btn.innerHTML = original;
+      const { latitude: lat, longitude: lon } = pos.coords;
+      document.getElementById('addr-input').value = '';
+      setAddress(lat, lon, `Ma position (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
+    },
+    err => {
+      btn.innerHTML = original;
+      showStatus("Géolocalisation refusée ou indisponible : " + err.message, 'error');
+    },
+    { timeout: 10000 }
+  );
+});
+
+// ── Mini-carte canton ─────────────────────────────────
+
+// ── Communes du canton (contours) ─────────────────────
+function loadCommunesGeojson() {
+  if (communesGeojsonCache) return Promise.resolve(communesGeojsonCache);
+  if (communesLoadPromise) return communesLoadPromise;
+  communesLoadPromise = fetch(ODS_COMMUNES)
+    .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+    .then(data => { communesGeojsonCache = data.features || []; return communesGeojsonCache; })
+    .catch(err => { communesLoadPromise = null; throw err; });
+  return communesLoadPromise;
+}
+function geometryOf(shape) {
+  if (!shape) return null;
+  return shape.type === 'Feature' ? shape.geometry : shape;
+}
+function pointInRing(pt, ring) {
+  const x = pt[0], y = pt[1];
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1];
+    const xj = ring[j][0], yj = ring[j][1];
+    const intersect = ((yi > y) !== (yj > y)) &&
+      (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+function pointInPolygonCoords(pt, coords) {
+  if (!pointInRing(pt, coords[0])) return false;
+  for (let i = 1; i < coords.length; i++) {
+    if (pointInRing(pt, coords[i])) return false; // dans un trou
+  }
+  return true;
+}
+function pointInGeometry(pt, geom) {
+  if (!geom) return false;
+  if (geom.type === 'Polygon') return pointInPolygonCoords(pt, geom.coordinates);
+  if (geom.type === 'MultiPolygon') return geom.coordinates.some(p => pointInPolygonCoords(pt, p));
+  return false;
+}
+function communesWithinShape(features, cantonShape) {
+  const geom = geometryOf(cantonShape);
+  if (!geom) return [];
+  return features.filter(f => {
+    const pt = f.properties && f.properties.geo_point_2d;
+    if (!pt) return false;
+    return pointInGeometry([pt.lon, pt.lat], geom);
+  });
+}
+
+async function initCantonMap(geoShape) {
+  const wrap = document.getElementById('canton-map-wrap');
+  wrap.style.display = 'block';
+  if (cantonMap) { cantonMap.remove(); cantonMap = null; }
+  cantonCommunesLayer = null;
+  cantonMap = L.map('canton-map', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(cantonMap);
+  const layer = L.geoJSON(geoShape, {
+    style: { color: '#1E22AE', weight: 2, fillColor: '#ECEDFB', fillOpacity: 0.5 }
+  }).addTo(cantonMap);
+  cantonMap.fitBounds(layer.getBounds(), { padding: [12, 12] });
+
+  try {
+    const features = await loadCommunesGeojson();
+    const within = communesWithinShape(features, geoShape);
+    if (within.length && cantonMap) {
+      cantonCommunesLayer = L.geoJSON({ type: 'FeatureCollection', features: within }, {
+        style: { color: '#C8922A', weight: 1.2, fillOpacity: 0, dashArray: '3,3' },
+        onEachFeature: (feature, lyr) => {
+          const nom = feature.properties && feature.properties.com_nom;
+          if (nom) lyr.bindTooltip(nom, { sticky: true });
+        }
+      }).addTo(cantonMap);
+    }
+  } catch (err) {
+    console.warn('Contours communes indisponibles :', err.message);
+  }
+}
+
+// ── Communes du canton ────────────────────────────────
+async function loadCantonCommunes(cantonShape) {
+  const card = document.getElementById('communes-card');
+  const list = document.getElementById('canton-communes-list');
+  card.style.display = 'block';
+  list.innerHTML = `<div class="pe-empty"><span class="spinner"></span> Chargement…</div>`;
+  try {
+    const features = await loadCommunesGeojson();
+    const within = communesWithinShape(features, cantonShape);
+    if (!within.length) throw new Error('Aucune commune retournée');
+    const sorted = within
+      .map(f => f.properties || {})
+      .sort((a, b) => (parseInt(b.population_municipale, 10) || 0) - (parseInt(a.population_municipale, 10) || 0));
+    const popTotale = sorted.reduce((s, c) => s + (parseInt(c.population_municipale, 10) || 0), 0);
+    document.getElementById('stat-pop').textContent = popTotale.toLocaleString('fr-FR');
+    document.getElementById('stat-communes').textContent = sorted.length;
+    document.getElementById('canton-stats').style.display = 'grid';
+    list.innerHTML = sorted.map(c => `
+      <div class="commune-row">
+        <span>${c.com_nom || '—'}</span>
+        <span class="commune-pop">${c.population_municipale ? parseInt(c.population_municipale, 10).toLocaleString('fr-FR') + ' hab.' : '—'}</span>
+      </div>`).join('');
+  } catch(err) {
+    list.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`;
+    document.getElementById('canton-stats').style.display = 'none';
+  }
+}
+
+// ── Process coordonnées ──────────────────────────────
+async function processCoords(lat, lon) {
+  document.getElementById('canton-card').style.display = 'none';
+  document.getElementById('elus-card').style.display = 'none';
+  document.getElementById('communes-card').style.display = 'none';
+  document.getElementById('empty-canton').style.display = 'none';
+  showStatus('Identification du canton…', 'loading');
+  try {
+    const canton = await findCanton(lat, lon);
+    if (!canton) {
+      showStatus('Adresse hors Maine-et-Loire (49).', 'error');
+      document.getElementById('empty-canton').style.display = 'block';
+      updateAtdCardNoAddress();
+      return;
+    }
+    hideStatus();
+    displayCanton(canton);
+    loadElus(canton.canton_insee || canton.canton_code || '', canton.canton_nom || '');
+    loadCantonCommunes(canton.geo_shape);    
+    loadCollege(lat, lon);
+    loadCollegesCanton(canton.geo_shape);
+    loadRoutesMap();
+
+    loadENS(lat, lon);
+    loadMusees(lat, lon);
+    loadCSS(lat, lon);
+    loadMDS(lat, lon);
+    loadMDSAnnexes(lat, lon);
+    loadFH(lat, lon);
+    loadFV(lat, lon);
+    loadPDIPR(lat, lon);
+    loadEcluses(lat, lon);
+    loadPetiteEnfance(lat, lon);
+    loadAtd(lat, lon);
+
+    loadRoutesAlertes();
+  } catch(err) {
+    showStatus('Erreur : ' + err.message, 'error');
+  }
+}
+
+async function findCanton(lat, lon) {
+  const url = `${ODS_CANTONS}?where=distance(geo_shape,%20geom'POINT(${lon}%20${lat})',%201m)&limit=1&select=canton_nom,canton_code,canton_insee,geo_shape`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (!data.results||!data.results.length) return null;
+  return data.results[0];
+}
+
+function displayCanton(r) {
+  document.getElementById('canton-nom').textContent = r.canton_nom || 'Canton inconnu';
+  document.getElementById('canton-code').textContent = r.canton_code ? `Code INSEE : ${r.canton_code}` : '';
+  document.getElementById('canton-card').style.display = 'block';
+  currentCantonShape = r.geo_shape || null;   // ← ligne ajoutée
+  if (r.geo_shape) initCantonMap(r.geo_shape);
+}
+async function loadElus(code, nom) {
+  const card = document.getElementById('elus-card');
+  const list = document.getElementById('elus-list');
+  card.style.display = 'block';
+  list.innerHTML = `<div class="pe-empty"><span class="spinner"></span> Chargement…</div>`;
+  try {
+    const url = `https://tabular-api.data.gouv.fr/api/resources/601ef073-d986-4582-8e1a-ed14dc857fba/data/?${encodeURIComponent('Code du département')}__exact=49&page_size=50`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const nomN = nom.toLowerCase().replace(/canton (d'|de |du )/i,'');
+    let elus = (data.data||[]).filter(row => {
+      const cc = String(row['Code du canton']||'').trim();
+      const lc = String(row['Libellé du canton']||'').toLowerCase();
+      return cc===code||lc.includes(nomN)||nomN.includes(lc.split(' ').slice(0,2).join(' '));
+    });
+    if (!elus.length) {
+      list.innerHTML = `<div class="fallback-box">Correspondance automatique impossible pour ce canton.<br>Code : <strong>${code||'—'}</strong> — ${nom}<br><br>→ <a href="https://explore.data.gouv.fr/fr/datasets/5c34c4d1634f4173183a64f1/" target="_blank">Voir la liste complète</a></div>`;
+      return;
+    }
+    list.innerHTML = '';
+    elus.slice(0,2).forEach(elu => {
+      const nom2=elu["Nom de l'élu"]||'—';
+      const prenom=elu["Prénom de l'élu"]||'';
+      const debut=elu["Date de début du mandat"]||'';
+      const fonction=elu["Libellé de la fonction"]||'';
+      const initiales=`${prenom?prenom[0].toUpperCase():''}${nom2?nom2[0].toUpperCase():''}`;
+      const detail=[fonction,debut?`depuis le ${dateFr(debut)}`:''].filter(Boolean).join(' · ');
+      const div=document.createElement('div');
+      div.className='elu-card';
+      div.innerHTML=`<div class="elu-avatar">${initiales}</div><div><div class="elu-name">${prenom} ${nom2}</div><div class="elu-detail">${detail||'Conseiller·ère départemental·e'}</div></div>`;
+      list.appendChild(div);
+    });
+  } catch(err) {
+    list.innerHTML=`<div class="pe-error">Erreur : ${err.message}</div>`;
+  }
+}
+
+function renderPeItems(containerId, items) {
+  const el = document.getElementById(containerId);
+  if (!items.length) { el.innerHTML = '<div class="pe-empty">Aucun résultat à proximité.</div>'; return; }
+  el.innerHTML = items.map(i => `
+    <div class="pe-item">
+      <div class="pe-item-name"><span class="pe-distance">${kmLabel(i._dist)}</span>${i.name}</div>
+      ${i.type ? `<div class="pe-item-type">${i.type}</div>` : ''}
+      <div class="pe-item-detail">
+        ${i.addr ? i.addr + '<br>' : ''}
+        ${i.phone ? '📞 ' + i.phone + '<br>' : ''}
+        ${i.email ? '✉ <a href="mailto:' + i.email + '">' + i.email + '</a><br>' : ''}
+        ${i.web ? '<a href="' + i.web + '" target="_blank">Site web →</a><br>' : ''}
+        ${i.hours ? '🕐 ' + i.hours : ''}
+      </div>
+    </div>`).join('');
+}
+
+async function loadPeEaje(lat, lon) {
+  const el = document.getElementById('pe-eaje');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 10km)`;
+    const res = await fetch(`${ODS_EAJE}?where=${encodeURIComponent(where)}&limit=20`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo_point_2d);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      return { _dist: dist, name: r.nom||'—', type: r.type_structure||'', addr: [r.adresse, r.code_postal, r.commune].filter(Boolean).join(', '), phone: r.numero_telephone_structure||'', email: r.courriel_structure||'' };
+    }).filter(i => i._dist <= 10).sort((a,b) => a._dist - b._dist);
+    renderPeItems('pe-eaje', items);
+  } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
+}
+
+async function loadPeLaep(lat, lon) {
+  const el = document.getElementById('pe-laep');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(`${ODS_LAEP}?limit=50`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo_point || r['Geo Point'] || r.geo_point_2d);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      return { _dist: dist, name: r['Nom']||r.nom||'—', type:'', addr: [r['Adresse']||r.adresse, r['CP']||r.cp, r['Commune']||r.commune].filter(Boolean).join(', '), phone: r['Téléphone']||r.telephone||'', email: r['Courriel']||r.courriel||'', hours: r['Horaires']||r.horaires||'' };
+    }).filter(i => i._dist <= 20).sort((a,b) => a._dist - b._dist);
+    renderPeItems('pe-laep', items);
+  } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
+}
+
+async function loadPeRpe(lat, lon) {
+  const el = document.getElementById('pe-rpe');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(`${ODS_RPE}?limit=100`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo_point || r['Geo Point'] || r.geo_point_2d);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      return { _dist: dist, name: r['RPE']||r.rpe||'—', type:'', addr: [r['Adresse']||r.adresse, r['cp']||r.cp, r['Commune']||r.commune].filter(Boolean).join(', '), phone: r['Téléphone']||r.telephone||'', email: r['Courriel']||r.courriel||'' };
+    }).filter(i => i._dist <= 15).sort((a,b) => a._dist - b._dist);
+    renderPeItems('pe-rpe', items);
+  } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
+}
+
+async function loadPeMam(lat, lon) {
+  const el = document.getElementById('pe-mam');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const where = `distance(geo, geom'POINT(${lon} ${lat})', 10km)`;
+    const res = await fetch(`${ODS_MAM}?where=${encodeURIComponent(where)}&limit=30`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      return { _dist: dist, name: r.nom||'—', type:'MAM', addr: [r.adresse, r.cp, r.commune].filter(Boolean).join(', '), phone: r.telephone_1||'', email: r.courriel||'', web: r.site_internet||'' };
+    }).filter(i => i._dist <= 10).sort((a,b) => a._dist - b._dist);
+    renderPeItems('pe-mam', items);
+  } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
+}
+
+async function loadPeGad() {
+  const el = document.getElementById('pe-gad');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(`${ODS_GAD}?limit=50`);
+    const data = await res.json();
+    if (!data.results||!data.results.length) { el.innerHTML = '<div class="pe-empty">Aucun organisme trouvé.</div>'; return; }
+    el.innerHTML = data.results.map(r => `
+      <div class="pe-item">
+        <div class="pe-item-name">${r.organisme||'—'}</div>
+        <div class="pe-item-detail">
+          ${[r.adresse, r.cp, r.ville].filter(Boolean).join(', ')}<br>
+          ${r.telephone ? '📞 ' + r.telephone : ''}
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
+}
+
+function loadPetiteEnfance(lat, lon) {
+  peLoaded = true;
+  loadPeEaje(lat, lon);
+  loadPeLaep(lat, lon);
+  loadPeRpe(lat, lon);
+  loadPeMam(lat, lon);
+  loadPeGad();
+}
+
+async function loadCollegesCanton(cantonShape) {
+  collegeMapBuilt = false;
+  collegeMapData = null;
+  collegeCantonLayer = null;
+  if (collegeMapResizeObserver) { collegeMapResizeObserver.disconnect(); collegeMapResizeObserver = null; }
+  if (collegeMap) { collegeMap.remove(); collegeMap = null; }
+  document.getElementById('college-map-wrap').style.display = 'none';
+  document.getElementById('college-map-legend').style.display = 'none';
+  const empty = document.getElementById('college-map-empty');
+  empty.style.display = 'none';
+  document.getElementById('college-public-list').innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  document.getElementById('college-prive-list').innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  if (!cantonShape) return;
+  try {
+    const [pubRes, privRes] = await Promise.all([
+      fetch(`${ODS_COLLEGES_PUBLICS}?limit=100`),
+      fetch(`${ODS_COLLEGES_PRIVES}?limit=100`)
+    ]);
+    if (!pubRes.ok) throw new Error(`HTTP ${pubRes.status} (publics)`);
+    if (!privRes.ok) throw new Error(`HTTP ${privRes.status} (privés)`);
+    const pubData = await pubRes.json();
+    const privData = await privRes.json();
+    const geom = geometryOf(cantonShape);
+
+    function extract(records) {
+      return (records || []).map(r => {
+        const gp = parseGeoPoint(r.geo_point_2d);
+        if (!gp || !pointInGeometry([gp.lon, gp.lat], geom)) return null;
+        const dist = (savedLat != null && savedLon != null) ? haversine(savedLat, savedLon, gp.lat, gp.lon) : 0;
+        return {
+          _dist: dist,
+          name: r.coll_nom || '—',
+          lat: gp.lat, lon: gp.lon,
+          addr: [r.coll_adresse, r.coll_com_del || r.coll_com].filter(Boolean).join(', '),
+          phone: r.coll_tel || '',
+          web: r.coll_web || ''
+        };
+      }).filter(Boolean).sort((a, b) => a._dist - b._dist);
+    }
+
+    const publics = extract(pubData.results);
+    const prives  = extract(privData.results);
+
+    collegeMapData = { shape: cantonShape, publics, prives };
+
+    renderPeItems('college-public-list', publics);
+    renderPeItems('college-prive-list', prives);
+
+    if (!publics.length && !prives.length) {
+      empty.textContent = 'Aucun collège identifié dans ce canton.';
+      empty.style.display = 'block';
+      return;
+    }
+
+    const section = document.querySelector('.service-section[data-theme="college"]');
+    if (section && section.classList.contains('theme-active')) buildCollegeMap();
+  } catch(err) {
+    empty.textContent = 'Erreur lors du chargement de la carte : ' + err.message;
+    empty.style.display = 'block';
+    document.getElementById('college-public-list').innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`;
+    document.getElementById('college-prive-list').innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`;
+    console.warn('Carte collèges :', err.message);
+  }
+}
+function buildCollegeMap() {
+  if (collegeMapBuilt || !collegeMapData) return;
+  const { shape, publics, prives } = collegeMapData;
+  document.getElementById('college-map-empty').style.display = 'none';
+  const wrap = document.getElementById('college-map-wrap');
+  const legend = document.getElementById('college-map-legend');
+  wrap.style.display = 'block';
+  legend.style.display = 'block';
+
+  collegeMap = L.map('college-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
+  collegeMap.setView([savedLat, savedLon], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(collegeMap);
+  collegeCantonLayer = L.geoJSON(shape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.25 } }).addTo(collegeMap);
+
+  function addMarkers(list, color, label) {
+    list.forEach(c => {
+      L.circleMarker([c.lat, c.lon], { radius: 7, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1 })
+        .addTo(collegeMap)
+        .bindTooltip(`<strong>${c.name}</strong><br><span style="font-size:11px;color:#8A93A3">${label}</span>`, { sticky: true });
+    });
+  }
+  addMarkers(publics, '#1E22AE', 'Collège public');
+  addMarkers(prives, '#7b3fa0', 'Collège privé');
+
+  const mask = buildMaskGeoJSON(shape);
+  if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(collegeMap);
+
+  collegeMap.invalidateSize(false);
+  collegeMap.fitBounds(collegeCantonLayer.getBounds(), { padding: [16, 16], animate: false });
+  forceSvgRepaint(collegeMap);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!collegeMap) return;
+      collegeMap.invalidateSize(false);
+      collegeMap.fitBounds(collegeCantonLayer.getBounds(), { padding: [16, 16], animate: false });
+      forceSvgRepaint(collegeMap);
+    });
+  });
+
+  collegeMapResizeObserver = new ResizeObserver(() => {
+    if (!collegeMap || !collegeCantonLayer) return;
+    collegeMap.invalidateSize(false);
+    collegeMap.fitBounds(collegeCantonLayer.getBounds(), { padding: [16, 16], animate: false });
+    forceSvgRepaint(collegeMap);
+  });
+  collegeMapResizeObserver.observe(wrap);
+
+  collegeMapBuilt = true;
+}
+
+async function loadCollege(lat, lon) {
+  const card = document.getElementById('college-card');
+  try {
+    const res = await fetch(`${ODS_COLLEGES}?where=distance(geo_shape,%20geom'POINT(${lon}%20${lat})',%201m)&limit=1&select=sc_college_nom,sc_college_adr,sc_college_com,sc_college_tel,sc_college_web`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.results||!data.results.length) { card.innerHTML=`<div class="pe-empty">Aucun secteur trouvé.</div>`; return; }
+    const r=data.results[0];
+    card.innerHTML=`<div class="contact-card">
+      <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18V17h2v-4.82l1 .55V17c0 2.21 3.58 4 8 4s8-1.79 8-4v-4.27L23 9 12 3z"/></svg></div>
+      <div>
+        <div class="contact-name">${r.sc_college_nom}</div>
+        <div class="contact-detail">${r.sc_college_adr}, ${r.sc_college_com}${r.sc_college_tel?'<br>'+r.sc_college_tel:''}${r.sc_college_web?`<br><a href="${r.sc_college_web}" target="_blank">Site web →</a>`:''}</div>
+      </div></div>`;
+  } catch(err) { card.innerHTML=`<div class="pe-error">Erreur : ${err.message}</div>`; }
+}
+
+
+
+async function loadENS(lat, lon) {
+  const el = document.getElementById('ens-card');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+
+  // Réinitialiser la carte ENS
+  const mapWrap = document.getElementById('ens-map-wrap');
+  mapWrap.style.display = 'none';
+  if (ensMap) { ensMap.remove(); ensMap = null; }
+
+  try {
+    const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 10km)`;
+    const res = await fetch(`${ODS_ENS}?where=${encodeURIComponent(where)}&limit=30`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo_point_2d);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      const surf = r.ens_superficie_ha ? `Superficie : ${Math.round(parseFloat(r.ens_superficie_ha))} ha` : '';
+      return { _dist: dist, name: r.ens_identification || '—', type: r.ens_paysage || '', addr: surf, gp, raw: r };
+    }).filter(i => i._dist <= 10).sort((a,b) => a._dist - b._dist);
+
+    renderPeItems('ens-card', items);
+
+    // Construire la carte si on a des ENS avec coordonnées
+    const withCoords = items.filter(i => i.gp);
+    if (withCoords.length > 0) {
+      mapWrap.style.display = 'block';
+      ensMap = L.map('ens-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(ensMap);
+
+      // Marqueur de position de l'utilisateur
+      L.circleMarker([lat, lon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
+        .addTo(ensMap)
+        .bindPopup('Votre position');
+
+      // Marqueurs ENS
+      const bounds = [[lat, lon]];
+      withCoords.forEach(item => {
+        const marker = L.marker([item.gp.lat, item.gp.lon], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="background:#1A7A4A;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)">🌿</div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
+          })
+        }).addTo(ensMap);
+        const popupTxt = `<strong>${item.name}</strong>${item.type ? '<br>' + item.type : ''}${item.addr ? '<br>' + item.addr : ''}`;
+        marker.bindPopup(popupTxt);
+        bounds.push([item.gp.lat, item.gp.lon]);
+      });
+
+      ensMap.fitBounds(bounds, { padding: [20, 20] });
+    }
+  } catch(err) {
+    el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`;
+  }
+}
+async function loadMusees(lat, lon) {
+  const el = document.getElementById('musees-card');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(ODS_MUSEES);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const features = data.features || [];
+    const items = features.map(f => {
+      const p = f.properties || {};
+      const coords = f.geometry?.coordinates;
+      const dist = coords ? haversine(lat, lon, coords[1], coords[0]) : 999;
+      return { _dist: dist, name: p.nom || '—', type: p.categories || '', addr: [p.adresse, [p.cp, p.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), phone: p.telephone || '', web: p.site_internet || '' };
+    }).filter(i => i._dist <= 30).sort((a,b) => a._dist - b._dist);
+    renderPeItems('musees-card', items);
+  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; }
+}
+
+async function loadCSS(lat, lon) {
+  const el = document.getElementById('css-card');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(`${ODS_CSS}?limit=50`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo_point);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      return { _dist: dist, name: r.nom || '—', type: '', addr: [r.adresse, [r.code_postal, r.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), phone: r.telephone || '', hours: r.horaires || '' };
+    }).filter(i => i._dist <= 30).sort((a,b) => a._dist - b._dist);
+    renderPeItems('css-card', items);
+  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; }
+}
+
+async function loadMDS(lat, lon) {
+  const card = document.getElementById('mds-card');
+  try {
+    const res = await fetch(`${ODS_MDS}?where=distance(geo_shape,%20geom'POINT(${lon}%20${lat})',%201m)&limit=1`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.results||!data.results.length) { card.innerHTML=`<div class="pe-empty">Aucune MDS trouvée.</div>`; return; }
+    const r=data.results[0];
+    card.innerHTML=`<div class="contact-card">
+      <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
+      <div>
+        <div class="contact-name">MDS — ${r.mds_nom}</div>
+        <div class="contact-detail">Maison du Département des Solidarités${r.mds_url?`<br><a href="${r.mds_url}" target="_blank">Voir la fiche →</a>`:''}</div>
+      </div></div>`;
+  } catch(err) { card.innerHTML=`<div class="pe-error">Erreur : ${err.message}</div>`; }
+}
+
+async function loadMDSAnnexes(lat, lon) {
+  const el = document.getElementById('mds-annexes-card');
+  el.innerHTML = '';
+  try {
+    const res = await fetch(`${ODS_MDS_ANNEXES}?limit=50`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo_point);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      return { _dist: dist, name: r.ls_designa || '—', type: r.ls_structu || '', addr: [r.ls_adresse, [r.cp, r.commune_deleguee || r.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), web: r.url || '' };
+    }).filter(i => i._dist <= 15).sort((a,b) => a._dist - b._dist);
+    if (!items.length) return;
+    el.innerHTML = `<div class="subsection-title" style="margin-top:10px">Sites annexes à proximité</div>` + items.map(i => `
+      <div class="pe-item" style="margin-bottom:8px">
+        <div class="pe-item-name"><span class="pe-distance">${kmLabel(i._dist)}</span>${i.name}</div>
+        ${i.type ? `<div class="pe-item-type">${i.type}</div>` : ''}
+        <div class="pe-item-detail">${i.addr ? i.addr + '<br>' : ''}${i.web ? '<a href="' + i.web + '" target="_blank">Voir la fiche →</a>' : ''}</div>
+      </div>`).join('');
+  } catch(err) {}
+}
+
+async function loadFoyers(lat, lon, url, containerId, typeLabel, radius = 30) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(`${url}?limit=50`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = parseGeoPoint(r.geo_point_2d);
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      const lignes = [];
+      if (r.adresse || r.commune) lignes.push([r.adresse, r.commune].filter(Boolean).join(', '));
+      if (r.gestionnai) lignes.push(`Gestionnaire : ${r.gestionnai}`);
+      if (r.capacite) lignes.push(`Capacité : ${r.capacite} places`);
+      return { _dist: dist, name: r.nom || r.gestionnai || typeLabel, type: typeLabel, addr: lignes.join('<br>') };
+    }).filter(i => i._dist <= radius).sort((a,b) => a._dist - b._dist);
+    renderPeItems(containerId, items);
+  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; }
+}
+function loadFH(lat, lon) { loadFoyers(lat, lon, ODS_FH, 'fh-card', "Foyer d'hébergement"); }
+function loadFV(lat, lon) { loadFoyers(lat, lon, ODS_FV, 'fv-card', "Foyer de vie"); }
+
+async function loadPDIPR(lat, lon) {
+  const el = document.getElementById('pdipr-card');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 10km)`;
+    const url = `${ODS_PDIPR}?where=${encodeURIComponent(where)}&limit=20&select=cpdipr_circuit_nom,cpdipr_pratique_circuit,cpdipr_longueur,cpdipr_nom_commune_depart,cpdipr_gestionnaire_circuit,cpdipr_labelisation,cpdipr_annee_inscription,geo_point_2d`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results || []).map(r => {
+      const gp = r.geo_point_2d;
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 999;
+      const longueurKm = r.cpdipr_longueur ? (r.cpdipr_longueur / 1000).toFixed(1) + ' km' : '';
+      const nom = r.cpdipr_circuit_nom || `Circuit – ${r.cpdipr_nom_commune_depart || '—'}`;
+      const label = r.cpdipr_labelisation === 'Oui' ? ' · Labellisé' : '';
+      return {
+        _dist: dist, name: nom, type: r.cpdipr_pratique_circuit || '',
+        addr: [r.cpdipr_nom_commune_depart ? `Départ : ${r.cpdipr_nom_commune_depart}` : '', longueurKm, r.cpdipr_gestionnaire_circuit || ''].filter(Boolean).join(' · '),
+        hours: label ? `🏅${label}` : ''
+      };
+    }).filter(i => i._dist <= 10).sort((a, b) => a._dist - b._dist);
+    renderPeItems('pdipr-card', items);
+  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; }
+}
+
+async function loadEcluses(lat, lon) {
+  const el = document.getElementById('ecluses-card');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(`${ODS_ECLUSES}?limit=50`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results || []).map(r => {
+      const gp = r.geo_point_2d;
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 999;
+      const equip = r.eme_equi_1 ? `🚿 ${r.eme_equi_1}` : '';
+      const type  = r.eme_type_e ? `Écluse ${r.eme_type_e}` : '';
+      return {
+        _dist: dist, name: r.eme_nom || '—', type,
+        addr: [r.eme_adress, [r.eme_codepo, r.eme_nom_co].filter(Boolean).join(' '), r.eme_rivier ? `Rivière : ${r.eme_rivier}` : ''].filter(Boolean).join(' · '),
+        phone: r.eme_tel || '', hours: equip
+      };
+    }).filter(i => i._dist <= 30).sort((a, b) => a._dist - b._dist);
+    renderPeItems('ecluses-card', items);
+  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; }
+}
+
+// ── ATD ────────────────────────────────────────────────
+function updateAtdCardNoAddress() {
+  document.getElementById('atd-nom').textContent = 'Aucune adresse définie';
+  document.getElementById('atd-detail').textContent = 'Identifiez votre adresse pour connaître votre agence de rattachement.';
+}
+async function loadAtd(lat, lon) {
+  const nomEl = document.getElementById('atd-nom');
+  const detailEl = document.getElementById('atd-detail');
+  nomEl.innerHTML = '<span class="spinner"></span> Chargement…';
+  detailEl.textContent = '';
+  try {
+    const url = `${ODS_ATD}?where=${encodeURIComponent(`distance(geo_shape, geom'POINT(${lon} ${lat})', 1m)`)}&limit=1&select=atd_code,atd_nom`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.results || !data.results.length) {
+      nomEl.textContent = 'Hors périmètre ATD';
+      detailEl.textContent = 'Adresse non couverte par le réseau départemental.';
+      return;
+    }
+    const r = data.results[0];
+    const code = r.atd_code || '';
+    const nom = r.atd_nom || 'ATD inconnue';
+    const contact = ATD_CONTACTS[code] || {};
+    nomEl.textContent = `ATD ${nom}`;
+    detailEl.innerHTML = `Agence Technique Départementale${contact.adresse ? ' — ' + contact.adresse : ''}`;
+  } catch(err) {
+    nomEl.textContent = 'Indisponible';
+    detailEl.textContent = `Impossible de charger : ${err.message}`;
+  }
+}
+
+// ── Trafic ───────────────────────────────────────────
+
+
+// loadRoutesMap() — ne charge plus que les données, ne touche plus à Leaflet
+async function loadRoutesMap() {
+  routesMapBuilt = false;
+  routesGeojson = null;
+  if (routesResizeObserver) { routesResizeObserver.disconnect(); routesResizeObserver = null; }
+if (routesMap) { routesMap.remove(); routesMap = null; }
+  document.getElementById('routes-map-wrap').style.display = 'none';
+  document.getElementById('routes-map-legend').style.display = 'none';
+  if (!currentCantonShape) return;
+  try {
+    const coords = [];
+    function extractCoords(obj) {
+      if (!obj) return;
+      if (obj.type === 'Feature') return extractCoords(obj.geometry);
+      if (obj.type === 'Polygon') obj.coordinates.forEach(ring => ring.forEach(c => coords.push(c)));
+      if (obj.type === 'MultiPolygon') obj.coordinates.forEach(poly => poly.forEach(ring => ring.forEach(c => coords.push(c))));
+    }
+    extractCoords(currentCantonShape);
+    if (!coords.length) return;
+
+    const lons = coords.map(c => c[0]);
+    const lats = coords.map(c => c[1]);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    routesBbox = { minLon, maxLon, minLat, maxLat };
+    const where = `in_bbox(geo_point_2d, ${minLat}, ${minLon}, ${maxLat}, ${maxLon})`;
+
+    const PAGE = 100;
+    async function fetchAll(dataset, extraParams) {
+      let offset = 0, all = [], going = true;
+      while (going) {
+        const url = `${ODS_BASE}/${dataset}/records?where=${encodeURIComponent(where)}&limit=${PAGE}&offset=${offset}${extraParams}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const batch = data.results || [];
+        all = all.concat(batch);
+        going = batch.length === PAGE && all.length < 600;
+        offset += PAGE;
+      }
+      return all;
+    }
+
+    const [routesResults, traficResults] = await Promise.all([
+      fetchAll('224900019_routes-departementales-en-maine-et-loire', '&select=geo_shape,rd_axe'),
+      fetchAll('224900019_trafic-des-routes-departementales-de-maine-et-loire', '&select=axe,niveau_trafic')
+    ]);
+    if (!routesResults.length) return;
+
+    const traficByAxe = {};
+    traficResults.forEach(r => {
+      if (!r.axe || !r.niveau_trafic) return;
+      const key = r.axe.replace(/^49\s*/, '').trim();
+      if (!traficByAxe[key]) traficByAxe[key] = r.niveau_trafic.trim();
+    });
+
+    routesGeojson = {
+      type: 'FeatureCollection',
+      features: routesResults.map(r => {
+        if (!r.geo_shape) return null;
+        const axe = (r.rd_axe || '').replace(/^49\s*/, '').trim();
+        return { type: 'Feature', geometry: r.geo_shape.geometry || r.geo_shape, properties: { axe, niveau: traficByAxe[axe] || null } };
+      }).filter(Boolean)
+    };
+
+    // Si l'onglet est déjà ouvert quand les données arrivent (cas rare), on construit tout de suite
+    const section = document.querySelector('.service-section[data-theme="routes"]');
+    if (section && section.classList.contains('theme-active')) buildRoutesMap();
+  } catch(err) {
+    console.warn('Chargement données routes:', err.message);
+  }
+}
+
+// Nouvelle fonction — construit la carte, appelée uniquement quand le conteneur est visible
+function buildRoutesMap() {
+  if (routesMapBuilt || !routesGeojson || !currentCantonShape) return;
+  const mapWrap = document.getElementById('routes-map-wrap');
+  const legend = document.getElementById('routes-map-legend');
+  mapWrap.style.display = 'block';
+  legend.style.display = 'block';
+
+if (routesBbox) {
+  const avgLat = (routesBbox.minLat + routesBbox.maxLat) / 2;
+  const lonSpan = (routesBbox.maxLon - routesBbox.minLon) * Math.cos(avgLat * Math.PI / 180);
+  const latSpan = routesBbox.maxLat - routesBbox.minLat;
+  const aspect = lonSpan / latSpan;
+  const wrapWidth = mapWrap.clientWidth || 600;
+  mapWrap.style.height = Math.min(560, Math.max(280, wrapWidth / aspect)) + 'px';
+}
+
+  routesMap = L.map('routes-map', {
+  zoomControl: true,
+  attributionControl: false,
+  scrollWheelZoom: false
+});
+  routesMap.setView([savedLat, savedLon], 11);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(routesMap);
+
+  const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(routesMap);
+
+  routesLayer = L.geoJSON(routesGeojson, {
+    style: () => ({ color: '#1E22AE', weight: 2.5, opacity: 0.85 }),
+    onEachFeature: (feature, layer) => {
+      const { axe, niveau } = feature.properties;
+      if (axe) layer.bindTooltip(niveau ? `<strong>${axe}</strong><br><span style="font-size:11px;color:#8A93A3">${niveau}</span>` : `<strong>${axe}</strong>`, { sticky: true });
+    }
+  }).addTo(routesMap);
+
+  
+  const mask = buildMaskGeoJSON(currentCantonShape);
+  if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(routesMap);
+
+  // Mesure immédiate
+  routesMap.invalidateSize(false);
+routesMap.fitBounds(cantonLayer.getBounds(), { padding: [20, 20], animate: false });
+  forceSvgRepaint(routesMap);
+
+  // Correction différée : la grille CSS peut ne pas être stabilisée
+  // au moment de la première mesure (cas typique des layouts grid/flex
+  // révélés par un changement de display sur un ancêtre).
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!routesMap) return;
+      routesMap.invalidateSize(false);
+if (cantonLayer) routesMap.fitBounds(cantonLayer.getBounds(), { padding: [20, 20], animate: false });
+      forceSvgRepaint(routesMap);
+    });
+  });
+
+
+routesResizeObserver = new ResizeObserver(() => {
+  if (!routesMap || !cantonLayer) return;
+  routesMap.invalidateSize(false);
+  routesMap.fitBounds(cantonLayer.getBounds(), { padding: [20, 20], animate: false });
+  forceSvgRepaint(routesMap);
+});
+  routesResizeObserver.observe(document.getElementById('routes-map-wrap'));
+  routesMapBuilt = true;
+}
+async function loadTrafic(lat, lon) {
+  const el = document.getElementById('trafic-card');
+  el.innerHTML = `<div class="pe-empty"><span class="spinner"></span> Chargement…</div>`;
+  try {
+    const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 5km)`;
+    const url = `${ODS_TRAFIC}?where=${encodeURIComponent(where)}&limit=8&order_by=niveau_trafic asc`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const results = data.results || [];
+    if (!results.length) {
+      el.innerHTML = `<div class="pe-empty">Aucune donnée de trafic à proximité.</div>`;
+      return;
+    }
+    const byRoute = {};
+    results.forEach(r => {
+      const num = (r.axe || '—').replace(/^49\s*/, '').trim();
+      const niveau = r.niveau_trafic || '—';
+      if (!byRoute[num]) byRoute[num] = { num, niveau };
+    });
+    el.innerHTML = Object.values(byRoute).slice(0, 6).map(r => `
+      <div class="trafic-item">
+        <div>
+          <div class="trafic-route">${r.num}</div>
+          <div class="trafic-sub">Route départementale</div>
+        </div>
+        <div class="trafic-badge">${r.niveau}</div>
+      </div>`).join('');
+  } catch(err) {
+    el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`;
+  }
+}
+
+// ── Alertes routes ─────────────────────────────────────
+function parseAlertesHtml(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const contenu = doc.querySelector('#dep49-contenu') || doc.querySelector('main') || doc.body;
+  const texte = contenu ? contenu.textContent : '';
+
+  if (/aucune alerte/i.test(texte)) return { status: 'none' };
+
+  const alertItems = doc.querySelectorAll('.alerte, .alert, [class*="alerte"], [class*="alert"], li, .contrainte');
+  const found = [];
+  alertItems.forEach(item => {
+    const t = item.textContent.trim();
+    if (t.length > 20 && t.length < 500 && !/^(contact|menu|accueil|mentions|abonnement|partenaire)/i.test(t)) found.push(t);
+  });
+  return found.length ? { status: 'found', items: found } : { status: 'unparsed' };
+}
+
+async function fetchViaProxies(targetUrl) {
+  const proxies = [
+    u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+  ];
+  let lastError = null;
+  for (const buildUrl of proxies) {
+    try {
+      const res = await fetch(buildUrl(targetUrl));
+      if (!res.ok) { lastError = new Error(`HTTP ${res.status}`); continue; }
+      const text = await res.text();
+      if (!text || text.length < 200) { lastError = new Error('Réponse vide ou invalide'); continue; }
+      return text;
+    } catch(err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('Tous les relais ont échoué');
+}
+
+function renderAlertesLinkOnly(reason) {
+  const el = document.getElementById('routes-alertes');
+  el.innerHTML = `<div class="fallback-box">
+    Affichage automatique indisponible${reason ? ' (' + reason + ')' : ''}.<br><br>
+    <a href="https://www.inforoutes49.fr/alertes" target="_blank" rel="noopener">→ Consulter les alertes directement sur Inforoutes49</a>
+  </div>`;
+}
+
+async function loadRoutesAlertes() {
+  const el = document.getElementById('routes-alertes');
+  el.innerHTML = `<div class="pe-empty"><span class="spinner"></span> Chargement…</div>`;
+  try {
+    const html = await fetchViaProxies(INFOROUTES_ALERTES);
+    const result = parseAlertesHtml(html);
+
+    if (result.status === 'none') {
+      el.innerHTML = `
+        <div class="route-ok-box">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          <span>Aucune alerte sur le réseau départemental</span>
+        </div>`;
+      return;
+    }
+    if (result.status === 'found') {
+      el.innerHTML = result.items.slice(0, 8).map(t => `
+        <div class="alerte-item">
+          <div class="alerte-dot"></div>
+          <div><div class="alerte-titre">Contrainte de circulation</div><div class="alerte-desc">${t.slice(0, 200)}</div></div>
+        </div>`).join('');
+      return;
+    }
+    renderAlertesLinkOnly('contenu non reconnu');
+  } catch(err) {
+    renderAlertesLinkOnly(err.message);
+  }
+}
+
+// ── Init ─────────────────────────────────────────────
+// ── Navigation par briques ────────────────────────────
+
+function buildMaskGeoJSON(shape) {
+  let geom = shape.type === 'Feature' ? shape.geometry : shape;
+  let rings = geom.type === 'Polygon' ? geom.coordinates : geom.type === 'MultiPolygon' ? geom.coordinates.flat() : null;
+  if (!rings) return null;
+  const world = [[-90,-180],[-90,180],[90,180],[90,-180],[-90,-180]];
+  return { type: 'Feature', geometry: { type: 'Polygon', coordinates: [world, ...rings] }, properties: {} };
+}
+
+function forceSvgRepaint(map) {
+  if (!map) return;
+  const pane = map.getPane('overlayPane');
+  const svg = pane && pane.querySelector('svg.leaflet-zoom-animated');
+  if (!svg) return;
+  svg.style.width = svg.getAttribute('width') + 'px';
+  svg.style.height = svg.getAttribute('height') + 'px';
+}
+
+function waitForStableSize(el, cb, lastSize) {
+  const w = el.clientWidth, h = el.clientHeight;
+  if (w > 0 && h > 0 && lastSize && lastSize[0] === w && lastSize[1] === h) {
+    cb();
+    return;
+  }
+  requestAnimationFrame(() => waitForStableSize(el, cb, [w, h]));
+}
+
+function showTheme(theme) {
+  document.getElementById('main').classList.add('sidebar-collapsed');
+  document.getElementById('briques-grid').style.display = 'none';
+  document.getElementById('back-to-briques').style.display = 'inline-flex';
+  document.querySelectorAll('.service-section[data-theme]').forEach(s => {
+    s.classList.toggle('theme-active', s.dataset.theme === theme);
+  });
+
+  window.scrollTo({ top: document.getElementById('services-col').offsetTop - 90, behavior: 'smooth' });
+
+  if (theme === 'routes') {
+    waitForStableSize(document.querySelector('.service-section[data-theme="routes"]'), () => {
+      if (!routesMapBuilt) {
+        buildRoutesMap();
+      } else if (routesMap) {
+        routesMap.invalidateSize(false);
+        if (routesLayer) routesMap.fitBounds(routesLayer.getBounds(), { padding: [20, 20], animate: false });
+        forceSvgRepaint(routesMap);
+      }
+    });
+  }
+
+  if (theme === 'college') {
+    waitForStableSize(document.querySelector('.service-section[data-theme="college"]'), () => {
+      if (!collegeMapBuilt) {
+        buildCollegeMap();
+      } else if (collegeMap && collegeCantonLayer) {
+        collegeMap.invalidateSize(false);
+        collegeMap.fitBounds(collegeCantonLayer.getBounds(), { padding: [16, 16], animate: false });
+        forceSvgRepaint(collegeMap);
+      }
+    });
+  }
+}
+
+
+function showBriques() {
+  document.getElementById('main').classList.remove('sidebar-collapsed'); 
+  document.getElementById('briques-grid').style.display = 'grid';
+  document.getElementById('back-to-briques').style.display = 'none';
+  document.querySelectorAll('.service-section[data-theme]').forEach(s => s.classList.remove('theme-active'));
+  if (cantonMap) requestAnimationFrame(() => cantonMap.invalidateSize(false));
+}
+document.querySelectorAll('.brique').forEach(b => {
+  b.addEventListener('click', () => showTheme(b.dataset.theme));
+});
+document.getElementById('back-to-briques').addEventListener('click', showBriques);
+
+// ── Accordéons de sous-rubriques ──────────────────────
+function initSubsectionAccordions() {
+  document.querySelectorAll('.service-section-body').forEach(body => {
+    const subs = Array.from(body.querySelectorAll(':scope > .subsection'));
+    subs.forEach((sub, idx) => {
+      const titleEl = sub.querySelector(':scope > .subsection-title');
+      if (!titleEl) return;
+      const titleText = titleEl.textContent;
+      const rest = Array.from(sub.children).filter(c => c !== titleEl);
+
+      sub.classList.add('accordion');
+      titleEl.remove();
+
+      const header = document.createElement('div');
+      header.className = 'subsection-header';
+      header.innerHTML = `<div class="subsection-title">${titleText}</div>
+        <svg class="subsection-arrow${idx === 0 ? ' open' : ''}" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>`;
+
+      const content = document.createElement('div');
+      content.className = 'subsection-content' + (idx === 0 ? ' open' : '');
+      rest.forEach(el => content.appendChild(el));
+
+      sub.appendChild(header);
+      sub.appendChild(content);
+
+      header.addEventListener('click', () => {
+        content.classList.toggle('open');
+        header.querySelector('.subsection-arrow').classList.toggle('open');
+      });
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initSubsectionAccordions();
+  
+  const saved = loadSaved();
+  if (saved && saved.lat && !isNaN(saved.lat)) {
+    document.getElementById('addr-input').value = saved.label || '';
+    setAddress(saved.lat, saved.lon, saved.label);
+  } else {
+    resetAllPanels();
+  }
+});
+
+</script>
+</body>
+</html>
