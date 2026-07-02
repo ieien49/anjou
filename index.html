@@ -899,12 +899,23 @@
       </div>
       <div class="service-section-body">
         <div class="subsection">
-  <div class="subsection-title">Espaces naturels sensibles (10 km)</div>
-  <div id="ens-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:220px;margin-bottom:12px;display:none;">
-    <div id="ens-map" style="width:100%;height:100%;"></div>
-  </div>
-  <div class="item-grid" id="ens-card"><div class="pe-empty">Identifiez une adresse…</div></div>
+          <div class="subsection-title" style="margin-bottom:8px">Espaces naturels sensibles (10 km)</div>
+          <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+            <div>
+              <div id="ens-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+                <div id="ens-map" style="width:100%;height:100%;"></div>
+              </div>
+              <div id="ens-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
+  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1A7A4A;vertical-align:middle;margin-right:4px;"></span>Espace naturel sensible
+  <span style="display:inline-block;width:20px;height:3px;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;border-radius:2px;"></span>Circuit de randonnée
 </div>
+              <div id="ens-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+            </div>
+            <div class="item-grid" id="ens-card" style="grid-template-columns:1fr;">
+              <div class="pe-empty">Identifiez une adresse…</div>
+            </div>
+          </div>
+        </div>
         <div class="subsection">
           <div class="subsection-title">Circuits de randonnée — PDIPR (10 km)</div>
           <div class="item-grid" id="pdipr-card"><div class="pe-empty">Identifiez une adresse…</div></div>
@@ -1112,8 +1123,18 @@ if (routesMap) { routesMap.remove(); routesMap = null; }
 currentCantonShape = null;
 document.getElementById('routes-map-wrap').style.display = 'none';
 document.getElementById('routes-map-legend').style.display = 'none';
-  if (ensMap) { ensMap.remove(); ensMap = null; }
+  if (ensResizeObserver) { ensResizeObserver.disconnect(); ensResizeObserver = null; }
+if (ensMap) { ensMap.remove(); ensMap = null; }
+ensMapBuilt = false;
+ensGeojsonData = null;
+pdiprGeojsonData = null;
+pdiprLayerRef = null;
 document.getElementById('ens-map-wrap').style.display = 'none';
+document.getElementById('ens-map-legend').style.display = 'none';
+document.getElementById('ens-map-empty').style.display = 'block';
+document.getElementById('ens-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
+
+
 if (collegeMapResizeObserver) { collegeMapResizeObserver.disconnect(); collegeMapResizeObserver = null; }
 if (collegeMap) { collegeMap.remove(); collegeMap = null; }
 collegeMapBuilt = false;
@@ -1141,11 +1162,19 @@ function hideSuggestions() {
   const s = document.getElementById('suggestions');
   s.style.display = 'none'; s.innerHTML = '';
 }
+// Bbox approximative du Maine-et-Loire (left,top,right,bottom)
+const M49_VIEWBOX = '-1.40,47.90,0.15,47.10';
+
 async function geocodeAddress(q) {
-  const url = `${NOMINATIM}?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=fr&addressdetails=1`;
+  const url = `${NOMINATIM}?q=${encodeURIComponent(q)}&format=json&limit=8&countrycodes=fr&addressdetails=1&viewbox=${M49_VIEWBOX}&bounded=1`;
   const res = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
   if (!res.ok) throw new Error('Géocodage indisponible');
-  return res.json();
+  const results = await res.json();
+  // Filtre de sécurité : ne garder que le département 49
+  return results.filter(r => {
+    const cp = r.address && r.address.postcode;
+    return cp && cp.startsWith('49');
+  }).slice(0, 5);
 }
 document.getElementById('addr-input').addEventListener('input', e => {
   clearTimeout(suggestTimer);
@@ -1332,6 +1361,7 @@ async function processCoords(lat, lon) {
     loadRoutesMap();
 
     loadENS(lat, lon);
+    loadPdiprMapData(lat, lon);
     loadMusees(lat, lon);
     loadCSS(lat, lon);
     loadMDS(lat, lon);
@@ -1644,14 +1674,28 @@ async function loadCollege(lat, lon) {
 
 
 const ODS_ENS_GEOJSON = ODS_BASE + "/224900019_espaces-naturels-sensibles-en-maine-et-loire/exports/geojson";
+const ODS_PDIPR_GEOJSON = ODS_BASE + "/224900019_circuits-ditinerance-touristique-en-maine-et-loire/exports/geojson";
+
+let ensMapBuilt = false;
+let ensGeojsonData = null;
+let ensResizeObserver = null;
+let pdiprGeojsonData = null;
+let pdiprLayerRef = null;
 
 async function loadENS(lat, lon) {
   const el = document.getElementById('ens-card');
   el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
 
-  const mapWrap = document.getElementById('ens-map-wrap');
-  mapWrap.style.display = 'none';
+  ensMapBuilt = false;
+  ensGeojsonData = null;
+  pdiprGeojsonData = null;
+  pdiprLayerRef = null;
+  if (ensResizeObserver) { ensResizeObserver.disconnect(); ensResizeObserver = null; }
   if (ensMap) { ensMap.remove(); ensMap = null; }
+  document.getElementById('ens-map-wrap').style.display = 'none';
+  document.getElementById('ens-map-legend').style.display = 'none';
+  document.getElementById('ens-map-empty').style.display = 'block';
+  document.getElementById('ens-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
 
   try {
     const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 10km)`;
@@ -1665,39 +1709,124 @@ async function loadENS(lat, lon) {
       const gp = p.geo_point_2d;
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
       const surf = p.ens_superficie_ha ? `Superficie : ${Math.round(parseFloat(p.ens_superficie_ha))} ha` : '';
-      return { _dist: dist, name: p.ens_identification || '—', type: p.ens_paysage || '', addr: surf, feature: f };
+      return { _dist: dist, name: p.ens_identification || '—', type: p.ens_paysage || '', addr: surf };
     }).sort((a,b) => a._dist - b._dist);
 
     renderPeItems('ens-card', items);
 
     if (features.length > 0) {
-      mapWrap.style.display = 'block';
-      ensMap = L.map('ens-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(ensMap);
-
-      L.circleMarker([lat, lon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
-        .addTo(ensMap)
-        .bindPopup('Votre position');
-
-      const ensLayer = L.geoJSON(geojson, {
-        style: { color: '#1A7A4A', weight: 2, fillColor: '#1A7A4A', fillOpacity: 0.35 },
-        onEachFeature: (feature, layer) => {
-          const p = feature.properties || {};
-          layer.bindTooltip(
-            p.ens_paysage ? `<strong>${p.ens_identification}</strong><br><span style="font-size:11px;color:#8A93A3">${p.ens_paysage}</span>` : `<strong>${p.ens_identification}</strong>`,
-            { sticky: true }
-          );
-        }
-      }).addTo(ensMap);
-
-      const bounds = ensLayer.getBounds();
-      bounds.extend([lat, lon]);
-      ensMap.fitBounds(bounds, { padding: [20, 20] });
+      ensGeojsonData = geojson;
+      const section = document.querySelector('.service-section[data-theme="environnement"]');
+      if (section && section.classList.contains('theme-active')) buildENSMap();
+    } else {
+      document.getElementById('ens-map-empty').textContent = 'Aucun espace naturel sensible à proximité.';
     }
   } catch(err) {
     el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`;
   }
-}async function loadMusees(lat, lon) {
+}
+
+async function loadPdiprMapData(lat, lon) {
+  try {
+    const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 10km)`;
+    const res = await fetch(`${ODS_PDIPR_GEOJSON}?where=${encodeURIComponent(where)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const geojson = await res.json();
+    if (geojson.features && geojson.features.length) {
+      pdiprGeojsonData = geojson;
+      if (ensMap && ensMapBuilt) addPdiprLayerToMap();
+    }
+  } catch(err) {
+    console.warn('Chargement circuits (carte ENS) :', err.message);
+  }
+}
+
+function addPdiprLayerToMap() {
+  if (!ensMap || !pdiprGeojsonData || pdiprLayerRef) return;
+  pdiprLayerRef = L.geoJSON(pdiprGeojsonData, {
+    style: { color: '#C8922A', weight: 3, opacity: 0.85, dashArray: '6,4' },
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      const nom = p.cpdipr_circuit_nom || `Circuit – ${p.cpdipr_nom_commune_depart || '—'}`;
+      const pratique = p.cpdipr_pratique_circuit || '';
+      layer.bindTooltip(
+        pratique ? `<strong>${nom}</strong><br><span style="font-size:11px;color:#8A93A3">${pratique}</span>` : `<strong>${nom}</strong>`,
+        { sticky: true }
+      );
+    }
+  }).addTo(ensMap);
+}
+
+
+function buildENSMap() {
+  if (ensMapBuilt || !ensGeojsonData) return;
+  const wrap = document.getElementById('ens-map-wrap');
+  wrap.style.display = 'block';
+  document.getElementById('ens-map-empty').style.display = 'none';
+  document.getElementById('ens-map-legend').style.display = 'block';
+
+  ensMap = L.map('ens-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
+  ensMap.setView([savedLat, savedLon], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(ensMap);
+
+  // Contour du canton
+  let cantonLayer = null;
+  if (currentCantonShape) {
+    cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(ensMap);
+  }
+
+  // Masque du fond de carte hors canton — ajouté AVANT les ENS pour ne pas les recouvrir
+  if (currentCantonShape) {
+    const mask = buildMaskGeoJSON(currentCantonShape);
+    if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(ensMap);
+  }
+
+  L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
+    .addTo(ensMap)
+    .bindPopup('Votre position');
+
+  const ensLayer = L.geoJSON(ensGeojsonData, {
+    style: { color: '#1A7A4A', weight: 2, fillColor: '#1A7A4A', fillOpacity: 0.35 },
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(
+        p.ens_paysage ? `<strong>${p.ens_identification}</strong><br><span style="font-size:11px;color:#8A93A3">${p.ens_paysage}</span>` : `<strong>${p.ens_identification}</strong>`,
+        { sticky: true }
+      );
+    }
+  }).addTo(ensMap);
+ 
+
+  addPdiprLayerToMap();
+
+  const bounds = ensLayer.getBounds();
+  bounds.extend([savedLat, savedLon]);
+
+  ensMap.invalidateSize(false);
+  ensMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+  forceSvgRepaint(ensMap);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!ensMap) return;
+      ensMap.invalidateSize(false);
+      ensMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+      forceSvgRepaint(ensMap);
+    });
+  });
+
+  ensResizeObserver = new ResizeObserver(() => {
+    if (!ensMap) return;
+    ensMap.invalidateSize(false);
+    ensMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+    forceSvgRepaint(ensMap);
+  });
+  ensResizeObserver.observe(wrap);
+
+  ensMapBuilt = true;
+}
+
+async function loadMusees(lat, lon) {
   const el = document.getElementById('musees-card');
   el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
   try {
@@ -1921,9 +2050,9 @@ if (routesMap) { routesMap.remove(); routesMap = null; }
       fetchAll('224900019_routes-departementales-en-maine-et-loire', '&select=geo_shape,rd_axe'),
       fetchAll('224900019_trafic-des-routes-departementales-de-maine-et-loire', '&select=axe,niveau_trafic')
     ]);
-    if (!routesResults.length) return;
 
     const traficByAxe = {};
+    
     traficResults.forEach(r => {
       if (!r.axe || !r.niveau_trafic) return;
       const key = r.axe.replace(/^49\s*/, '').trim();
@@ -1950,6 +2079,9 @@ if (routesMap) { routesMap.remove(); routesMap = null; }
 // Nouvelle fonction — construit la carte, appelée uniquement quand le conteneur est visible
 function buildRoutesMap() {
   if (routesMapBuilt || !routesGeojson || !currentCantonShape) return;
+  if (!routesGeojson.features.length) {
+    document.getElementById('routes-map-legend').innerHTML = 'Aucune route départementale recensée dans ce canton.';
+  }
   const mapWrap = document.getElementById('routes-map-wrap');
   const legend = document.getElementById('routes-map-legend');
   mapWrap.style.display = 'block';
@@ -2171,6 +2303,17 @@ function showTheme(theme) {
       }
     });
   }
+
+if (theme === 'environnement') {
+  waitForStableSize(document.querySelector('.service-section[data-theme="environnement"]'), () => {
+    if (!ensMapBuilt) {
+      buildENSMap();
+    } else if (ensMap) {
+      ensMap.invalidateSize(false);
+      forceSvgRepaint(ensMap);
+    }
+  });
+}
 
   if (theme === 'college') {
     waitForStableSize(document.querySelector('.service-section[data-theme="college"]'), () => {
