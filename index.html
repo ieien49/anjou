@@ -926,30 +926,58 @@
         <div class="ssec-title">Autonomie</div>
       </div>
       <div class="service-section-body">
-        <div class="subsection">
-          <div class="subsection-title">Maison de l'Autonomie</div>
-          <div class="contact-card">
-            <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg></div>
-            <div>
-              <div class="contact-name">Maison de l'Autonomie (MDA)</div>
-              <div class="contact-detail">
-                6 rue Jean-Lecuit — 49000 Angers<br>
-                <a href="tel:+33241816077">02 41 81 60 77</a><br>
-                <a href="mailto:contact@mda.maine-et-loire.fr">contact@mda.maine-et-loire.fr</a><br>
-                <a href="https://www.mda.maine-et-loire.fr" target="_blank" rel="noopener">Site web →</a>
-              </div>
-            </div>
+<div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+
+  <!-- Colonne gauche : carte -->
+  <div>
+    <div class="subsection-title" style="margin-bottom:8px">Maison de l'Autonomie, foyers d'hébergement et de vie (30 km)</div>
+    <div id="autonomie-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+      <div id="autonomie-map" style="width:100%;height:100%;"></div>
+    </div>
+    <div id="autonomie-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C0392B;vertical-align:middle;margin-right:4px;"></span>MDA
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Foyer d'hébergement
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7b3fa0;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Foyer de vie
+    </div>
+    <div id="autonomie-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+  </div>
+
+  <!-- Colonne droite : infos -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Maison de l'Autonomie</div>
+      <div class="contact-card">
+        <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg></div>
+        <div>
+          <div class="contact-name">Maison de l'Autonomie (MDA)</div>
+          <div class="contact-detail">
+            6 rue Jean-Lecuit — 49000 Angers<br>
+            <a href="tel:+33241816077">02 41 81 60 77</a><br>
+            <a href="mailto:contact@mda.maine-et-loire.fr">contact@mda.maine-et-loire.fr</a><br>
+            <a href="https://www.mda.maine-et-loire.fr" target="_blank" rel="noopener">Site web →</a>
           </div>
         </div>
-        <div class="subsection">
-          <div class="subsection-title">Foyers d'hébergement (30 km)</div>
-          <div class="item-grid" id="fh-card"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Foyers de vie (30 km)</div>
-          <div class="item-grid" id="fv-card"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
       </div>
+    </div>
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Foyers d'hébergement (30 km)</div>
+      <div class="item-grid" id="fh-card" style="grid-template-columns:1fr;">
+        <div class="pe-empty">Identifiez une adresse…</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Foyers de vie (30 km)</div>
+      <div class="item-grid" id="fv-card" style="grid-template-columns:1fr;">
+        <div class="pe-empty">Identifiez une adresse…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
     </section>
 
     <!-- Environnement -->
@@ -1109,6 +1137,9 @@ let collegeMapBuilt = false;
 let collegeMapData = null;
 let collegeMapResizeObserver = null;
 let collegeCantonLayer = null;
+let autonomieMap = null, autonomieMapBuilt = false, autonomieResizeObserver = null;
+let fhMapData = null, fvMapData = null;
+const MDA_LAT = 47.489523220926515, MDA_LON = -0.5639538316361441;
 
 // ── localStorage ─────────────────────────────────────
 function saveAddr(lat, lon, label) {
@@ -1250,6 +1281,17 @@ mdsMapData = null;
 mdsLayerRef = null;
 annexesMapData = null;
 annexesLayerRef = null;
+
+if (autonomieResizeObserver) { autonomieResizeObserver.disconnect(); autonomieResizeObserver = null; }
+if (autonomieMap) { autonomieMap.remove(); autonomieMap = null; }
+autonomieMapBuilt = false;
+fhMapData = null;
+fvMapData = null;
+document.getElementById('autonomie-map-wrap').style.display = 'none';
+document.getElementById('autonomie-map-legend').style.display = 'none';
+document.getElementById('autonomie-map-empty').style.display = 'block';
+document.getElementById('autonomie-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
+
 }
 
 
@@ -2019,6 +2061,76 @@ if (annexesMapData && annexesMapData.length) annexesMapData.forEach(a => bounds.
   cssMapBuilt = true;
 }
 
+function buildOrRefreshAutonomieMap() {
+  if (fhMapData === null || fvMapData === null) return; // attend les deux réponses
+  const section = document.querySelector('.service-section[data-theme="autonomie"]');
+  if (section && section.classList.contains('theme-active')) buildAutonomieMap();
+}
+
+function buildAutonomieMap() {
+  if (autonomieMapBuilt) return;
+  document.getElementById('autonomie-map-empty').style.display = 'none';
+  const wrap = document.getElementById('autonomie-map-wrap');
+  const legend = document.getElementById('autonomie-map-legend');
+  wrap.style.display = 'block';
+  legend.style.display = 'block';
+
+  autonomieMap = L.map('autonomie-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
+  autonomieMap.setView([savedLat, savedLon], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(autonomieMap);
+
+  if (currentCantonShape) {
+    L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(autonomieMap);
+  }
+
+  L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
+    .addTo(autonomieMap)
+    .bindPopup('Votre position');
+
+  L.circleMarker([MDA_LAT, MDA_LON], { radius: 8, color: '#fff', weight: 2, fillColor: '#C0392B', fillOpacity: 1 })
+    .addTo(autonomieMap)
+    .bindTooltip('<strong>Maison de l\'Autonomie</strong>', { sticky: true });
+
+  (fhMapData || []).forEach(f => {
+    L.circleMarker([f.lat, f.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#C8922A', fillOpacity: 1 })
+      .addTo(autonomieMap)
+      .bindTooltip(`<strong>${f.name}</strong><br><span style="font-size:11px;color:#8A93A3">Foyer d'hébergement</span>`, { sticky: true });
+  });
+  (fvMapData || []).forEach(f => {
+    L.circleMarker([f.lat, f.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#7b3fa0', fillOpacity: 1 })
+      .addTo(autonomieMap)
+      .bindTooltip(`<strong>${f.name}</strong><br><span style="font-size:11px;color:#8A93A3">Foyer de vie</span>`, { sticky: true });
+  });
+
+  const bounds = L.latLngBounds([[savedLat, savedLon], [MDA_LAT, MDA_LON]]);
+  (fhMapData || []).forEach(f => bounds.extend([f.lat, f.lon]));
+  (fvMapData || []).forEach(f => bounds.extend([f.lat, f.lon]));
+
+  autonomieMap.invalidateSize(false);
+  autonomieMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+  forceSvgRepaint(autonomieMap);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!autonomieMap) return;
+      autonomieMap.invalidateSize(false);
+      autonomieMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+      forceSvgRepaint(autonomieMap);
+    });
+  });
+
+  autonomieResizeObserver = new ResizeObserver(() => {
+    if (!autonomieMap) return;
+    autonomieMap.invalidateSize(false);
+    autonomieMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+    forceSvgRepaint(autonomieMap);
+  });
+  autonomieResizeObserver.observe(wrap);
+
+  autonomieMapBuilt = true;
+}
+
+
 async function loadMusees(lat, lon) {
   const el = document.getElementById('musees-card');
   el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
@@ -2155,13 +2267,15 @@ async function loadFoyers(lat, lon, url, containerId, typeLabel, radius = 30) {
       if (r.adresse || r.commune) lignes.push([r.adresse, r.commune].filter(Boolean).join(', '));
       if (r.gestionnai) lignes.push(`Gestionnaire : ${r.gestionnai}`);
       if (r.capacite) lignes.push(`Capacité : ${r.capacite} places`);
-      return { _dist: dist, name: r.nom || r.gestionnai || typeLabel, type: typeLabel, addr: lignes.join('<br>') };
+      return { _dist: dist, name: r.nom || r.gestionnai || typeLabel, type: typeLabel, addr: lignes.join('<br>'), lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
     }).filter(i => i._dist <= radius).sort((a,b) => a._dist - b._dist);
     renderPeItems(containerId, items);
-  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; }
+    return items.filter(i => i.lat != null && i.lon != null);
+  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; return []; }
 }
-function loadFH(lat, lon) { loadFoyers(lat, lon, ODS_FH, 'fh-card', "Foyer d'hébergement"); }
-function loadFV(lat, lon) { loadFoyers(lat, lon, ODS_FV, 'fv-card', "Foyer de vie"); }
+function loadFH(lat, lon) { loadFoyers(lat, lon, ODS_FH, 'fh-card', "Foyer d'hébergement").then(items => { fhMapData = items; buildOrRefreshAutonomieMap(); }); }
+function loadFV(lat, lon) { loadFoyers(lat, lon, ODS_FV, 'fv-card', "Foyer de vie").then(items => { fvMapData = items; buildOrRefreshAutonomieMap(); }); }
+
 
 async function loadPDIPR(lat, lon) {
   const el = document.getElementById('pdipr-card');
@@ -2574,6 +2688,18 @@ if (theme === 'environnement') {
       }
     });
   }
+  
+  if (theme === 'autonomie') {
+  waitForStableSize(document.querySelector('.service-section[data-theme="autonomie"]'), () => {
+    if (!autonomieMapBuilt) {
+      buildOrRefreshAutonomieMap();
+    } else if (autonomieMap) {
+      autonomieMap.invalidateSize(false);
+      forceSvgRepaint(autonomieMap);
+    }
+  });
+}
+  
 }
 
 
