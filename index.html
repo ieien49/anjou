@@ -1643,64 +1643,61 @@ async function loadCollege(lat, lon) {
 
 
 
+const ODS_ENS_GEOJSON = ODS_BASE + "/224900019_espaces-naturels-sensibles-en-maine-et-loire/exports/geojson";
+
 async function loadENS(lat, lon) {
   const el = document.getElementById('ens-card');
   el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
 
-  // Réinitialiser la carte ENS
   const mapWrap = document.getElementById('ens-map-wrap');
   mapWrap.style.display = 'none';
   if (ensMap) { ensMap.remove(); ensMap = null; }
 
   try {
     const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 10km)`;
-    const res = await fetch(`${ODS_ENS}?where=${encodeURIComponent(where)}&limit=30`);
+    const res = await fetch(`${ODS_ENS_GEOJSON}?where=${encodeURIComponent(where)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const items = (data.results||[]).map(r => {
-      const gp = parseGeoPoint(r.geo_point_2d);
+    const geojson = await res.json();
+    const features = geojson.features || [];
+
+    const items = features.map(f => {
+      const p = f.properties || {};
+      const gp = p.geo_point_2d;
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
-      const surf = r.ens_superficie_ha ? `Superficie : ${Math.round(parseFloat(r.ens_superficie_ha))} ha` : '';
-      return { _dist: dist, name: r.ens_identification || '—', type: r.ens_paysage || '', addr: surf, gp, raw: r };
-    }).filter(i => i._dist <= 10).sort((a,b) => a._dist - b._dist);
+      const surf = p.ens_superficie_ha ? `Superficie : ${Math.round(parseFloat(p.ens_superficie_ha))} ha` : '';
+      return { _dist: dist, name: p.ens_identification || '—', type: p.ens_paysage || '', addr: surf, feature: f };
+    }).sort((a,b) => a._dist - b._dist);
 
     renderPeItems('ens-card', items);
 
-    // Construire la carte si on a des ENS avec coordonnées
-    const withCoords = items.filter(i => i.gp);
-    if (withCoords.length > 0) {
+    if (features.length > 0) {
       mapWrap.style.display = 'block';
       ensMap = L.map('ens-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(ensMap);
 
-      // Marqueur de position de l'utilisateur
       L.circleMarker([lat, lon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
         .addTo(ensMap)
         .bindPopup('Votre position');
 
-      // Marqueurs ENS
-      const bounds = [[lat, lon]];
-      withCoords.forEach(item => {
-        const marker = L.marker([item.gp.lat, item.gp.lon], {
-          icon: L.divIcon({
-            className: '',
-            html: `<div style="background:#1A7A4A;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)">🌿</div>`,
-            iconSize: [28, 28],
-            iconAnchor: [14, 14]
-          })
-        }).addTo(ensMap);
-        const popupTxt = `<strong>${item.name}</strong>${item.type ? '<br>' + item.type : ''}${item.addr ? '<br>' + item.addr : ''}`;
-        marker.bindPopup(popupTxt);
-        bounds.push([item.gp.lat, item.gp.lon]);
-      });
+      const ensLayer = L.geoJSON(geojson, {
+        style: { color: '#1A7A4A', weight: 2, fillColor: '#1A7A4A', fillOpacity: 0.35 },
+        onEachFeature: (feature, layer) => {
+          const p = feature.properties || {};
+          layer.bindTooltip(
+            p.ens_paysage ? `<strong>${p.ens_identification}</strong><br><span style="font-size:11px;color:#8A93A3">${p.ens_paysage}</span>` : `<strong>${p.ens_identification}</strong>`,
+            { sticky: true }
+          );
+        }
+      }).addTo(ensMap);
 
+      const bounds = ensLayer.getBounds();
+      bounds.extend([lat, lon]);
       ensMap.fitBounds(bounds, { padding: [20, 20] });
     }
   } catch(err) {
     el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`;
   }
-}
-async function loadMusees(lat, lon) {
+}async function loadMusees(lat, lon) {
   const el = document.getElementById('musees-card');
   el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
   try {
