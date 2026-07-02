@@ -800,27 +800,48 @@
         <div class="ssec-title">Petite enfance</div>
       </div>
       <div class="service-section-body">
-        <div class="subsection">
-          <div class="subsection-title">Établissements d'accueil (10 km)</div>
-          <div class="item-grid" id="pe-eaje"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Lieux d'accueil enfants-parents</div>
-          <div class="item-grid" id="pe-laep"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Relais petite enfance</div>
-          <div class="item-grid" id="pe-rpe"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Maisons d'assistants maternels (10 km)</div>
-          <div class="item-grid" id="pe-mam"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Garde à domicile agréée (département)</div>
-          <div class="item-grid" id="pe-gad"><div class="pe-empty"><span class="spinner"></span> Chargement…</div></div>
-        </div>
-      </div>
+<div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+
+  <!-- Colonne gauche : carte -->
+  <div>
+    <div class="subsection-title" style="margin-bottom:8px">Établissements petite enfance à proximité</div>
+    <div id="pe-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+      <div id="pe-map" style="width:100%;height:100%;"></div>
+    </div>
+    <div id="pe-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1E22AE;vertical-align:middle;margin-right:4px;"></span>Accueil jeunes enfants
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1A7A4A;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>LAEP
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Relais petite enfance
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7b3fa0;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>MAM
+    </div>
+    <div id="pe-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+  </div>
+
+  <!-- Colonne droite : infos -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Établissements d'accueil (10 km)</div>
+      <div class="item-grid" id="pe-eaje" style="grid-template-columns:1fr;"><div class="pe-empty">Identifiez une adresse…</div></div>
+    </div>
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Lieux d'accueil enfants-parents</div>
+      <div class="item-grid" id="pe-laep" style="grid-template-columns:1fr;"><div class="pe-empty">Identifiez une adresse…</div></div>
+    </div>
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Relais petite enfance</div>
+      <div class="item-grid" id="pe-rpe" style="grid-template-columns:1fr;"><div class="pe-empty">Identifiez une adresse…</div></div>
+    </div>
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Maisons d'assistants maternels (10 km)</div>
+      <div class="item-grid" id="pe-mam" style="grid-template-columns:1fr;"><div class="pe-empty">Identifiez une adresse…</div></div>
+    </div>
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Garde à domicile agréée (département)</div>
+      <div class="item-grid" id="pe-gad" style="grid-template-columns:1fr;"><div class="pe-empty"><span class="spinner"></span> Chargement…</div></div>
+    </div>
+  </div>
+</div>
+</div>
     </section>
 
     <!-- Collège -->
@@ -1138,6 +1159,9 @@ let collegeMapData = null;
 let collegeMapResizeObserver = null;
 let collegeCantonLayer = null;
 let autonomieMap = null, autonomieMapBuilt = false, autonomieResizeObserver = null;
+let peMap = null, peMapBuilt = false, peResizeObserver = null;
+let peEajeMapData = null, peLaepMapData = null, peRpeMapData = null, peMamMapData = null;
+
 let fhMapData = null, fvMapData = null;
 const MDA_LAT = 47.489523220926515, MDA_LON = -0.5639538316361441;
 
@@ -1291,6 +1315,15 @@ document.getElementById('autonomie-map-wrap').style.display = 'none';
 document.getElementById('autonomie-map-legend').style.display = 'none';
 document.getElementById('autonomie-map-empty').style.display = 'block';
 document.getElementById('autonomie-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
+
+if (peResizeObserver) { peResizeObserver.disconnect(); peResizeObserver = null; }
+if (peMap) { peMap.remove(); peMap = null; }
+peMapBuilt = false;
+peEajeMapData = null; peLaepMapData = null; peRpeMapData = null; peMamMapData = null;
+document.getElementById('pe-map-wrap').style.display = 'none';
+document.getElementById('pe-map-legend').style.display = 'none';
+document.getElementById('pe-map-empty').style.display = 'block';
+document.getElementById('pe-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
 
 }
 
@@ -1601,9 +1634,11 @@ async function loadPeEaje(lat, lon) {
     const items = (data.results||[]).map(r => {
       const gp = parseGeoPoint(r.geo_point_2d);
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
-      return { _dist: dist, name: r.nom||'—', type: r.type_structure||'', addr: [r.adresse, r.code_postal, r.commune].filter(Boolean).join(', '), phone: r.numero_telephone_structure||'', email: r.courriel_structure||'' };
+      return { _dist: dist, name: r.nom||'—', type: r.type_structure||'', addr: [r.adresse, r.code_postal, r.commune].filter(Boolean).join(', '), phone: r.numero_telephone_structure||'', email: r.courriel_structure||'', lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
     }).filter(i => i._dist <= 10).sort((a,b) => a._dist - b._dist);
     renderPeItems('pe-eaje', items);
+    peEajeMapData = items.filter(i => i.lat != null && i.lon != null);
+buildOrRefreshPeMap();
   } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
 }
 
@@ -1616,9 +1651,11 @@ async function loadPeLaep(lat, lon) {
     const items = (data.results||[]).map(r => {
       const gp = parseGeoPoint(r.geo_point || r['Geo Point'] || r.geo_point_2d);
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
-      return { _dist: dist, name: r['Nom']||r.nom||'—', type:'', addr: [r['Adresse']||r.adresse, r['CP']||r.cp, r['Commune']||r.commune].filter(Boolean).join(', '), phone: r['Téléphone']||r.telephone||'', email: r['Courriel']||r.courriel||'', hours: r['Horaires']||r.horaires||'' };
+      return { _dist: dist, name: r['Nom']||r.nom||'—', type:'', addr: [r['Adresse']||r.adresse, r['CP']||r.cp, r['Commune']||r.commune].filter(Boolean).join(', '), phone: r['Téléphone']||r.telephone||'', email: r['Courriel']||r.courriel||'', hours: r['Horaires']||r.horaires||'', lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
     }).filter(i => i._dist <= 20).sort((a,b) => a._dist - b._dist);
     renderPeItems('pe-laep', items);
+    peLaepMapData = items.filter(i => i.lat != null && i.lon != null);
+buildOrRefreshPeMap();
   } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
 }
 
@@ -1631,9 +1668,11 @@ async function loadPeRpe(lat, lon) {
     const items = (data.results||[]).map(r => {
       const gp = parseGeoPoint(r.geo_point || r['Geo Point'] || r.geo_point_2d);
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
-      return { _dist: dist, name: r['RPE']||r.rpe||'—', type:'', addr: [r['Adresse']||r.adresse, r['cp']||r.cp, r['Commune']||r.commune].filter(Boolean).join(', '), phone: r['Téléphone']||r.telephone||'', email: r['Courriel']||r.courriel||'' };
+      return { _dist: dist, name: r['RPE']||r.rpe||'—', type:'', addr: [r['Adresse']||r.adresse, r['cp']||r.cp, r['Commune']||r.commune].filter(Boolean).join(', '), phone: r['Téléphone']||r.telephone||'', email: r['Courriel']||r.courriel||'', lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
     }).filter(i => i._dist <= 15).sort((a,b) => a._dist - b._dist);
     renderPeItems('pe-rpe', items);
+    peRpeMapData = items.filter(i => i.lat != null && i.lon != null);
+buildOrRefreshPeMap();
   } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
 }
 
@@ -1647,9 +1686,11 @@ async function loadPeMam(lat, lon) {
     const items = (data.results||[]).map(r => {
       const gp = parseGeoPoint(r.geo);
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
-      return { _dist: dist, name: r.nom||'—', type:'MAM', addr: [r.adresse, r.cp, r.commune].filter(Boolean).join(', '), phone: r.telephone_1||'', email: r.courriel||'', web: r.site_internet||'' };
+      return { _dist: dist, name: r.nom||'—', type:'MAM', addr: [r.adresse, r.cp, r.commune].filter(Boolean).join(', '), phone: r.telephone_1||'', email: r.courriel||'', web: r.site_internet||'', lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
     }).filter(i => i._dist <= 10).sort((a,b) => a._dist - b._dist);
     renderPeItems('pe-mam', items);
+    peMamMapData = items.filter(i => i.lat != null && i.lon != null);
+buildOrRefreshPeMap();
   } catch(e) { el.innerHTML = `<div class="pe-error">Erreur : ${e.message}</div>`; }
 }
 
@@ -1673,6 +1714,14 @@ async function loadPeGad() {
 
 function loadPetiteEnfance(lat, lon) {
   peLoaded = true;
+  peEajeMapData = null; peLaepMapData = null; peRpeMapData = null; peMamMapData = null;
+  peMapBuilt = false;
+  if (peResizeObserver) { peResizeObserver.disconnect(); peResizeObserver = null; }
+  if (peMap) { peMap.remove(); peMap = null; }
+  document.getElementById('pe-map-wrap').style.display = 'none';
+  document.getElementById('pe-map-legend').style.display = 'none';
+  document.getElementById('pe-map-empty').style.display = 'block';
+  document.getElementById('pe-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
   loadPeEaje(lat, lon);
   loadPeLaep(lat, lon);
   loadPeRpe(lat, lon);
@@ -2130,6 +2179,70 @@ function buildAutonomieMap() {
   autonomieMapBuilt = true;
 }
 
+function buildOrRefreshPeMap() {
+  if (peEajeMapData === null || peLaepMapData === null || peRpeMapData === null || peMamMapData === null) return;
+  const section = document.querySelector('.service-section[data-theme="enfance"]');
+  if (section && section.classList.contains('theme-active')) buildPeMap();
+}
+
+function buildPeMap() {
+  if (peMapBuilt) return;
+  document.getElementById('pe-map-empty').style.display = 'none';
+  const wrap = document.getElementById('pe-map-wrap');
+  const legend = document.getElementById('pe-map-legend');
+  wrap.style.display = 'block';
+  legend.style.display = 'block';
+
+  peMap = L.map('pe-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
+  peMap.setView([savedLat, savedLon], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(peMap);
+
+  if (currentCantonShape) {
+    L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(peMap);
+  }
+
+  L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
+    .addTo(peMap)
+    .bindPopup('Votre position');
+
+  function addGroup(list, color, label) {
+    (list || []).forEach(i => {
+      L.circleMarker([i.lat, i.lon], { radius: 6, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1 })
+        .addTo(peMap)
+        .bindTooltip(`<strong>${i.name}</strong><br><span style="font-size:11px;color:#8A93A3">${label}</span>`, { sticky: true });
+    });
+  }
+  addGroup(peEajeMapData, '#1E22AE', 'Accueil jeunes enfants');
+  addGroup(peLaepMapData, '#1A7A4A', 'LAEP');
+  addGroup(peRpeMapData, '#C8922A', 'Relais petite enfance');
+  addGroup(peMamMapData, '#7b3fa0', 'MAM');
+
+  const bounds = L.latLngBounds([[savedLat, savedLon]]);
+  [peEajeMapData, peLaepMapData, peRpeMapData, peMamMapData].forEach(arr => (arr || []).forEach(i => bounds.extend([i.lat, i.lon])));
+
+  peMap.invalidateSize(false);
+  peMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+  forceSvgRepaint(peMap);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!peMap) return;
+      peMap.invalidateSize(false);
+      peMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+      forceSvgRepaint(peMap);
+    });
+  });
+
+  peResizeObserver = new ResizeObserver(() => {
+    if (!peMap) return;
+    peMap.invalidateSize(false);
+    peMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+    forceSvgRepaint(peMap);
+  });
+  peResizeObserver.observe(wrap);
+
+  peMapBuilt = true;
+}
 
 async function loadMusees(lat, lon) {
   const el = document.getElementById('musees-card');
@@ -2696,6 +2809,17 @@ if (theme === 'environnement') {
     } else if (autonomieMap) {
       autonomieMap.invalidateSize(false);
       forceSvgRepaint(autonomieMap);
+    }
+  });
+}
+
+if (theme === 'enfance') {
+  waitForStableSize(document.querySelector('.service-section[data-theme="enfance"]'), () => {
+    if (!peMapBuilt) {
+      buildOrRefreshPeMap();
+    } else if (peMap) {
+      peMap.invalidateSize(false);
+      forceSvgRepaint(peMap);
     }
   });
 }
