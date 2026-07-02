@@ -521,7 +521,8 @@
   }
   #briques-grid.compact .brique {
     flex-direction: row;
-    padding: 8px 12px;
+    align-items: center;
+    padding: 6px 12px 6px 8px;
     gap: 8px;
     border-radius: 20px;
   }
@@ -531,7 +532,12 @@
     border-radius: 8px;
   }
   #briques-grid.compact .brique-icon svg { width: 15px; height: 15px; }
-  #briques-grid.compact .brique-label { font-size: 12px; }
+  #briques-grid.compact .brique-label {
+    font-size: 11.5px;
+    line-height: 1.25;
+    max-width: 78px;
+    text-align: left;
+  }
   .brique.active {
     border-color: var(--bleu-m);
     background: var(--bleu-l);
@@ -1868,6 +1874,7 @@ function buildENSMap() {
 
   const bounds = ensLayer.getBounds();
   bounds.extend([savedLat, savedLon]);
+  if (cantonLayer) bounds.extend(cantonLayer.getBounds());
 
   ensMap.invalidateSize(false);
   ensMap.fitBounds(bounds, { padding: [20, 20], animate: false });
@@ -2154,14 +2161,7 @@ function buildRoutesMap() {
   mapWrap.style.display = 'block';
   legend.style.display = 'block';
 
-if (routesBbox) {
-  const avgLat = (routesBbox.minLat + routesBbox.maxLat) / 2;
-  const lonSpan = (routesBbox.maxLon - routesBbox.minLon) * Math.cos(avgLat * Math.PI / 180);
-  const latSpan = routesBbox.maxLat - routesBbox.minLat;
-  const aspect = lonSpan / latSpan;
-  const wrapWidth = mapWrap.clientWidth || 600;
-  mapWrap.style.height = Math.min(560, Math.max(280, wrapWidth / aspect)) + 'px';
-}
+
 
   routesMap = L.map('routes-map', {
   zoomControl: true,
