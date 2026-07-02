@@ -512,12 +512,39 @@
   }
   .brique-icon svg { width: 26px; height: 26px; }
   .brique-label { font-size: 13px; font-weight: 700; color: var(--noir); line-height: 1.3; }
+  
+  #briques-grid.compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  #briques-grid.compact .brique {
+    flex-direction: row;
+    padding: 8px 12px;
+    gap: 8px;
+    border-radius: 20px;
+  }
+  #briques-grid.compact .brique:hover { transform: none; }
+  #briques-grid.compact .brique-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+  }
+  #briques-grid.compact .brique-icon svg { width: 15px; height: 15px; }
+  #briques-grid.compact .brique-label { font-size: 12px; }
+  .brique.active {
+    border-color: var(--bleu-m);
+    background: var(--bleu-l);
+    box-shadow: 0 2px 8px rgba(30,34,174,0.12);
+  }
+  
   .brique-count {
     font-size: 10px; font-weight: 700;
     color: var(--bleu-m); background: var(--bleu-l);
     padding: 2px 8px; border-radius: 10px;
     display: none;
   }
+  
   .brique-count.visible { display: inline-block; }
 
   #back-to-briques {
@@ -698,10 +725,8 @@
       </div>
     </div>
 
-    <button id="back-to-briques" style="display:none">
-      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-      Retour aux thèmes
-    </button>
+   
+      
 
     <!-- Routes & mobilité -->
 <section class="service-section" data-theme="routes">
@@ -2144,7 +2169,7 @@ if (routesBbox) {
   scrollWheelZoom: false
 });
   routesMap.setView([savedLat, savedLon], 11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(routesMap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(routesMap);
 
   const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(routesMap);
 
@@ -2326,8 +2351,10 @@ function waitForStableSize(el, cb, lastSize) {
 
 function showTheme(theme) {
   document.getElementById('main').classList.add('sidebar-collapsed');
-  document.getElementById('briques-grid').style.display = 'none';
-  document.getElementById('back-to-briques').style.display = 'inline-flex';
+  document.getElementById('briques-grid').classList.add('compact');
+  document.querySelectorAll('.brique').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === theme);
+  });
   document.querySelectorAll('.service-section[data-theme]').forEach(s => {
     s.classList.toggle('theme-active', s.dataset.theme === theme);
   });
@@ -2373,15 +2400,20 @@ if (theme === 'environnement') {
 
 function showBriques() {
   document.getElementById('main').classList.remove('sidebar-collapsed'); 
-  document.getElementById('briques-grid').style.display = 'grid';
-  document.getElementById('back-to-briques').style.display = 'none';
+  document.getElementById('briques-grid').classList.remove('compact');
+  document.querySelectorAll('.brique').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.service-section[data-theme]').forEach(s => s.classList.remove('theme-active'));
   if (cantonMap) requestAnimationFrame(() => cantonMap.invalidateSize(false));
 }
 document.querySelectorAll('.brique').forEach(b => {
-  b.addEventListener('click', () => showTheme(b.dataset.theme));
+  b.addEventListener('click', () => {
+    if (b.classList.contains('active')) {
+      showBriques();
+    } else {
+      showTheme(b.dataset.theme);
+    }
+  });
 });
-document.getElementById('back-to-briques').addEventListener('click', showBriques);
 
 // ── Accordéons de sous-rubriques ──────────────────────
 function initSubsectionAccordions() {
