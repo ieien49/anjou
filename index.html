@@ -908,6 +908,7 @@
               <div id="ens-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
   <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1A7A4A;vertical-align:middle;margin-right:4px;"></span>Espace naturel sensible
   <span style="display:inline-block;width:20px;height:3px;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;border-radius:2px;"></span>Circuit de randonnée
+  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2E86AB;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Écluse
 </div>
               <div id="ens-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
             </div>
@@ -1011,6 +1012,10 @@ const ATD_CONTACTS = {
 };
 
 let savedLat = null, savedLon = null;
+let pdiprGeojsonData = null;
+let pdiprLayerRef = null;
+let eclusesMapData = null;
+let eclusesLayerRef = null;
 let cantonMap = null;
 let ensMap = null;
 let routesMap = null, routesLayer = null;
@@ -1129,6 +1134,8 @@ ensMapBuilt = false;
 ensGeojsonData = null;
 pdiprGeojsonData = null;
 pdiprLayerRef = null;
+eclusesMapData = null;
+eclusesLayerRef = null;
 document.getElementById('ens-map-wrap').style.display = 'none';
 document.getElementById('ens-map-legend').style.display = 'none';
 document.getElementById('ens-map-empty').style.display = 'block';
@@ -1362,6 +1369,7 @@ async function processCoords(lat, lon) {
 
     loadENS(lat, lon);
     loadPdiprMapData(lat, lon);
+    loadEclusesMapData(lat, lon);
     loadMusees(lat, lon);
     loadCSS(lat, lon);
     loadMDS(lat, lon);
@@ -1679,8 +1687,7 @@ const ODS_PDIPR_GEOJSON = ODS_BASE + "/224900019_circuits-ditinerance-touristiqu
 let ensMapBuilt = false;
 let ensGeojsonData = null;
 let ensResizeObserver = null;
-let pdiprGeojsonData = null;
-let pdiprLayerRef = null;
+
 
 async function loadENS(lat, lon) {
   const el = document.getElementById('ens-card');
@@ -1690,6 +1697,8 @@ async function loadENS(lat, lon) {
   ensGeojsonData = null;
   pdiprGeojsonData = null;
   pdiprLayerRef = null;
+  eclusesMapData = null;
+  eclusesLayerRef = null;
   if (ensResizeObserver) { ensResizeObserver.disconnect(); ensResizeObserver = null; }
   if (ensMap) { ensMap.remove(); ensMap = null; }
   document.getElementById('ens-map-wrap').style.display = 'none';
@@ -1757,6 +1766,38 @@ function addPdiprLayerToMap() {
   }).addTo(ensMap);
 }
 
+async function loadEclusesMapData(lat, lon) {
+  try {
+    const where = `distance(geo_point_2d, geom'POINT(${lon} ${lat})', 15km)`;
+    const res = await fetch(`${ODS_ECLUSES}?where=${encodeURIComponent(where)}&limit=50`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results || []).filter(r => r.geo_point_2d);
+    if (items.length) {
+      eclusesMapData = items;
+      if (ensMap && ensMapBuilt) addEclusesLayerToMap();
+    }
+  } catch(err) {
+    console.warn('Chargement écluses (carte ENS) :', err.message);
+  }
+}
+
+function addEclusesLayerToMap() {
+  if (!ensMap || !eclusesMapData || eclusesLayerRef) return;
+  eclusesLayerRef = L.layerGroup(
+    eclusesMapData.map(r => {
+      const gp = r.geo_point_2d;
+      const nom = r.eme_nom || '—';
+      const type = r.eme_type_e ? `Écluse ${r.eme_type_e}` : '';
+      const riviere = r.eme_rivier ? `Rivière : ${r.eme_rivier}` : '';
+      return L.circleMarker([gp.lat, gp.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#2E86AB', fillOpacity: 1 })
+        .bindTooltip(
+          `<strong>${nom}</strong>${type ? `<br><span style="font-size:11px;color:#8A93A3">${type}</span>` : ''}${riviere ? `<br><span style="font-size:11px;color:#8A93A3">${riviere}</span>` : ''}`,
+          { sticky: true }
+        );
+    })
+  ).addTo(ensMap);
+}
 
 function buildENSMap() {
   if (ensMapBuilt || !ensGeojsonData) return;
@@ -1798,6 +1839,7 @@ function buildENSMap() {
  
 
   addPdiprLayerToMap();
+  addEclusesLayerToMap();
 
   const bounds = ensLayer.getBounds();
   bounds.extend([savedLat, savedLon]);
