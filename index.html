@@ -875,17 +875,47 @@
         <div class="ssec-title">Social & solidarité</div>
       </div>
       <div class="service-section-body">
-        <div class="subsection">
-          <div class="subsection-title">Maison du Département des Solidarités</div>
-          <div id="mds-card">
-            <div class="pe-empty">Votre Maison du Département apparaîtra ici une fois l'adresse identifiée.</div>
-          </div>
-          <div id="mds-annexes-card" style="margin-top:10px"></div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Centre de santé sexuelle (30 km)</div>
-          <div class="item-grid" id="css-card"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
+<div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+
+  <!-- Colonne gauche : carte -->
+  <div>
+    <div class="subsection-title" style="margin-bottom:8px">Centre de santé sexuelle (30 km)</div>
+    <div id="css-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+      <div id="css-map" style="width:100%;height:100%;"></div>
+    </div>
+    <div id="css-map-wrap" ...>
+  <div id="css-map" ...></div>
+</div>
+<div id="css-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
+  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C0392B;vertical-align:middle;margin-right:4px;"></span>MDS
+  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7b3fa0;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Site annexe MDS
+  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Centre de santé sexuelle
+</div>
+<div id="css-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+    <div id="css-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+  </div>
+
+  <!-- Colonne droite : infos -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Maison du Département des Solidarités</div>
+      <div id="mds-card">
+        <div class="pe-empty">Votre Maison du Département apparaîtra ici une fois l'adresse identifiée.</div>
+      </div>
+      <div id="mds-annexes-card" style="margin-top:10px"></div>
+    </div>
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Centres de santé sexuelle à proximité</div>
+      <div class="item-grid" id="css-card" style="grid-template-columns:1fr;">
+        <div class="pe-empty">Identifiez une adresse…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
       </div>
     </section>
 
@@ -929,34 +959,49 @@
         <div class="ssec-title">Environnement</div>
       </div>
       <div class="service-section-body">
-        <div class="subsection">
-          <div class="subsection-title" style="margin-bottom:8px">Espaces naturels sensibles (10 km)</div>
-          <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
-            <div>
-              <div id="ens-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
-                <div id="ens-map" style="width:100%;height:100%;"></div>
-              </div>
-              <div id="ens-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
-  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1A7A4A;vertical-align:middle;margin-right:4px;"></span>Espace naturel sensible
-  <span style="display:inline-block;width:20px;height:3px;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;border-radius:2px;"></span>Circuit de randonnée
-  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2E86AB;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Écluse
-</div>
-              <div id="ens-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
-            </div>
-            <div class="item-grid" id="ens-card" style="grid-template-columns:1fr;">
-              <div class="pe-empty">Identifiez une adresse…</div>
-            </div>
-          </div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Circuits de randonnée — PDIPR (10 km)</div>
-          <div class="item-grid" id="pdipr-card"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
-        <div class="subsection">
-          <div class="subsection-title">Écluses et maisons éclusières (30 km)</div>
-          <div class="item-grid" id="ecluses-card"><div class="pe-empty">Identifiez une adresse…</div></div>
-        </div>
+<div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+
+  <!-- Colonne gauche : carte -->
+  <div>
+    <div class="subsection-title" style="margin-bottom:8px">Espaces naturels, circuits et écluses (10-30 km)</div>
+    <div id="ens-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+      <div id="ens-map" style="width:100%;height:100%;"></div>
+    </div>
+    <div id="ens-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1A7A4A;vertical-align:middle;margin-right:4px;"></span>Espace naturel sensible
+      <span style="display:inline-block;width:20px;height:3px;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;border-radius:2px;"></span>Circuit de randonnée
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2E86AB;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Écluse
+    </div>
+    <div id="ens-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
+  </div>
+
+  <!-- Colonne droite : infos -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Espaces naturels sensibles (10 km)</div>
+      <div class="item-grid" id="ens-card" style="grid-template-columns:1fr;">
+        <div class="pe-empty">Identifiez une adresse…</div>
       </div>
+    </div>
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Circuits de randonnée — PDIPR (10 km)</div>
+      <div class="item-grid" id="pdipr-card" style="grid-template-columns:1fr;">
+        <div class="pe-empty">Identifiez une adresse…</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="subsection-title" style="margin-bottom:8px">Écluses et maisons éclusières (30 km)</div>
+      <div class="item-grid" id="ecluses-card" style="grid-template-columns:1fr;">
+        <div class="pe-empty">Identifiez une adresse…</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
     </section>
 
     <!-- Culture -->
@@ -1192,7 +1237,22 @@ document.getElementById('college-map-empty').textContent = 'Identifiez une adres
   document.getElementById('routes-alertes').innerHTML = '<div class="pe-empty"><span class="spinner"></span> Identifiez une adresse pour charger les alertes.</div>';
   document.getElementById('atd-nom').textContent = 'Identifiez une adresse';
   document.getElementById('atd-detail').textContent = "Connaître l'agence de rattachement nécessite une adresse.";
+
+if (cssResizeObserver) { cssResizeObserver.disconnect(); cssResizeObserver = null; }
+if (cssMap) { cssMap.remove(); cssMap = null; }
+cssMapBuilt = false;
+cssMapData = null;
+document.getElementById('css-map-wrap').style.display = 'none';
+document.getElementById('css-map-empty').style.display = 'block';
+document.getElementById('css-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
+document.getElementById('css-map-legend').style.display = 'none';
+mdsMapData = null;
+mdsLayerRef = null;
+annexesMapData = null;
+annexesLayerRef = null;
 }
+
+
 
 // ── Recherche / suggestions ───────────────────────────
 let suggestTimer = null;
@@ -1718,6 +1778,11 @@ const ODS_PDIPR_GEOJSON = ODS_BASE + "/224900019_circuits-ditinerance-touristiqu
 let ensMapBuilt = false;
 let ensGeojsonData = null;
 let ensResizeObserver = null;
+let cssMap = null, cssMapBuilt = false, cssMapData = null, cssResizeObserver = null;
+let mdsMapData = null;
+let mdsLayerRef = null;
+let annexesMapData = null;
+let annexesLayerRef = null;
 
 
 async function loadENS(lat, lon) {
@@ -1900,6 +1965,60 @@ function buildENSMap() {
   ensMapBuilt = true;
 }
 
+function buildCssMap() {
+  if (cssMapBuilt || !cssMapData) return;
+  const wrap = document.getElementById('css-map-wrap');
+  wrap.style.display = 'block';
+  document.getElementById('css-map-empty').style.display = 'none';
+  document.getElementById('css-map-legend').style.display = 'block';
+
+  cssMap = L.map('css-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
+  cssMap.setView([savedLat, savedLon], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(cssMap);
+
+  if (currentCantonShape) {
+    L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(cssMap);
+  }
+
+  L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
+    .addTo(cssMap)
+    .bindPopup('Votre position');
+
+  cssMapData.forEach(c => {
+    L.circleMarker([c.lat, c.lon], { radius: 7, color: '#fff', weight: 2, fillColor: '#C8922A', fillOpacity: 1 })
+      .addTo(cssMap)
+      .bindTooltip(`<strong>${c.name}</strong>`, { sticky: true });
+  });
+addMdsLayerToMap();
+addAnnexesLayerToMap();
+  const bounds = L.latLngBounds(cssMapData.map(c => [c.lat, c.lon]));
+  bounds.extend([savedLat, savedLon]);
+if (mdsMapData) bounds.extend([mdsMapData.lat, mdsMapData.lon]);
+if (annexesMapData && annexesMapData.length) annexesMapData.forEach(a => bounds.extend([a.lat, a.lon]));
+  cssMap.invalidateSize(false);
+  cssMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+  forceSvgRepaint(cssMap);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!cssMap) return;
+      cssMap.invalidateSize(false);
+      cssMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+      forceSvgRepaint(cssMap);
+    });
+  });
+
+  cssResizeObserver = new ResizeObserver(() => {
+    if (!cssMap) return;
+    cssMap.invalidateSize(false);
+    cssMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+    forceSvgRepaint(cssMap);
+  });
+  cssResizeObserver.observe(wrap);
+
+  cssMapBuilt = true;
+}
+
 async function loadMusees(lat, lon) {
   const el = document.getElementById('musees-card');
   el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
@@ -1921,6 +2040,20 @@ async function loadMusees(lat, lon) {
 async function loadCSS(lat, lon) {
   const el = document.getElementById('css-card');
   el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+
+  cssMapBuilt = false;
+  cssMapData = null;
+  if (cssResizeObserver) { cssResizeObserver.disconnect(); cssResizeObserver = null; }
+  if (cssMap) { cssMap.remove(); cssMap = null; }
+  document.getElementById('css-map-wrap').style.display = 'none';
+  document.getElementById('css-map-empty').style.display = 'block';
+  document.getElementById('css-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
+  document.getElementById('css-map-legend').style.display = 'none';
+mdsMapData = null;
+mdsLayerRef = null;
+annexesMapData = null;
+annexesLayerRef = null;
+
   try {
     const res = await fetch(`${ODS_CSS}?limit=50`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1928,14 +2061,25 @@ async function loadCSS(lat, lon) {
     const items = (data.results||[]).map(r => {
       const gp = parseGeoPoint(r.geo_point);
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
-      return { _dist: dist, name: r.nom || '—', type: '', addr: [r.adresse, [r.code_postal, r.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), phone: r.telephone || '', hours: r.horaires || '' };
+      return { _dist: dist, name: r.nom || '—', type: '', addr: [r.adresse, [r.code_postal, r.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), phone: r.telephone || '', hours: r.horaires || '', lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
     }).filter(i => i._dist <= 30).sort((a,b) => a._dist - b._dist);
     renderPeItems('css-card', items);
+
+    const withCoords = items.filter(i => i.lat != null && i.lon != null);
+    if (withCoords.length) {
+      cssMapData = withCoords;
+      const section = document.querySelector('.service-section[data-theme="social"]');
+      if (section && section.classList.contains('theme-active')) buildCssMap();
+    } else {
+      document.getElementById('css-map-empty').textContent = 'Aucun centre à proximité.';
+    }
   } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; }
 }
 
 async function loadMDS(lat, lon) {
   const card = document.getElementById('mds-card');
+  mdsMapData = null;
+  mdsLayerRef = null;
   try {
     const res = await fetch(`${ODS_MDS}?where=distance(geo_shape,%20geom'POINT(${lon}%20${lat})',%201m)&limit=1`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1948,12 +2092,19 @@ async function loadMDS(lat, lon) {
         <div class="contact-name">MDS — ${r.mds_nom}</div>
         <div class="contact-detail">Maison du Département des Solidarités${r.mds_url?`<br><a href="${r.mds_url}" target="_blank">Voir la fiche →</a>`:''}</div>
       </div></div>`;
+    const gp = parseGeoPoint(r.geo_point_2d || r.geo_point);
+    if (gp) {
+      mdsMapData = { name: r.mds_nom || 'MDS', lat: gp.lat, lon: gp.lon };
+      if (cssMap && cssMapBuilt) addMdsLayerToMap();
+    }
   } catch(err) { card.innerHTML=`<div class="pe-error">Erreur : ${err.message}</div>`; }
 }
 
 async function loadMDSAnnexes(lat, lon) {
   const el = document.getElementById('mds-annexes-card');
   el.innerHTML = '';
+  annexesMapData = null;
+annexesLayerRef = null;
   try {
     const res = await fetch(`${ODS_MDS_ANNEXES}?limit=50`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1961,9 +2112,12 @@ async function loadMDSAnnexes(lat, lon) {
     const items = (data.results||[]).map(r => {
       const gp = parseGeoPoint(r.geo_point);
       const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
-      return { _dist: dist, name: r.ls_designa || '—', type: r.ls_structu || '', addr: [r.ls_adresse, [r.cp, r.commune_deleguee || r.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), web: r.url || '' };
+
+      return { _dist: dist, name: r.ls_designa || '—', type: r.ls_structu || '', addr: [r.ls_adresse, [r.cp, r.commune_deleguee || r.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), web: r.url || '', lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
     }).filter(i => i._dist <= 15).sort((a,b) => a._dist - b._dist);
     if (!items.length) return;
+    annexesMapData = items.filter(i => i.lat != null && i.lon != null);
+if (cssMap && cssMapBuilt) addAnnexesLayerToMap();
     el.innerHTML = `<div class="subsection-title" style="margin-top:10px">Sites annexes à proximité</div>` + items.map(i => `
       <div class="pe-item" style="margin-bottom:8px">
         <div class="pe-item-name"><span class="pe-distance">${kmLabel(i._dist)}</span>${i.name}</div>
@@ -1971,6 +2125,20 @@ async function loadMDSAnnexes(lat, lon) {
         <div class="pe-item-detail">${i.addr ? i.addr + '<br>' : ''}${i.web ? '<a href="' + i.web + '" target="_blank">Voir la fiche →</a>' : ''}</div>
       </div>`).join('');
   } catch(err) {}
+}
+
+function addMdsLayerToMap() {
+  if (!cssMap || !mdsMapData || mdsLayerRef) return;
+  mdsLayerRef = L.circleMarker([mdsMapData.lat, mdsMapData.lon], { radius: 8, color: '#fff', weight: 2, fillColor: '#C0392B', fillOpacity: 1 })
+    .addTo(cssMap)
+    .bindTooltip(`<strong>${mdsMapData.name}</strong><br><span style="font-size:11px;color:#8A93A3">MDS</span>`, { sticky: true });
+}
+function addAnnexesLayerToMap() {
+  if (!cssMap || !annexesMapData || annexesLayerRef) return;
+  annexesLayerRef = L.layerGroup(
+    annexesMapData.map(a => L.circleMarker([a.lat, a.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#7b3fa0', fillOpacity: 1 })
+      .bindTooltip(`<strong>${a.name}</strong><br><span style="font-size:11px;color:#8A93A3">Site annexe MDS</span>`, { sticky: true }))
+  ).addTo(cssMap);
 }
 
 async function loadFoyers(lat, lon, url, containerId, typeLabel, radius = 30) {
@@ -2392,6 +2560,17 @@ if (theme === 'environnement') {
         collegeMap.invalidateSize(false);
         collegeMap.fitBounds(collegeCantonLayer.getBounds(), { padding: [16, 16], animate: false });
         forceSvgRepaint(collegeMap);
+      }
+    });
+  }
+  
+  if (theme === 'social') {
+    waitForStableSize(document.querySelector('.service-section[data-theme="social"]'), () => {
+      if (!cssMapBuilt) {
+        buildCssMap();
+      } else if (cssMap) {
+        cssMap.invalidateSize(false);
+        forceSvgRepaint(cssMap);
       }
     });
   }
