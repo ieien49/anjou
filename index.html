@@ -1491,7 +1491,11 @@ async function loadCantonCommunes(cantonShape) {
   try {
     const features = await loadCommunesGeojson();
     const within = communesWithinShape(features, cantonShape);
-    if (!within.length) throw new Error('Aucune commune retournée');
+    if (!within.length) {
+  list.innerHTML = `<div class="pe-empty">Ce canton est inclus dans une seule commune (${'/* nom canton si tu l'as sous la main */'}) dont le centre ne tombe pas dans le contour. Voir la carte ci-dessus.</div>`;
+  document.getElementById('canton-stats').style.display = 'none';
+  return;
+}
     const sorted = within
       .map(f => f.properties || {})
       .sort((a, b) => (parseInt(b.population_municipale, 10) || 0) - (parseInt(a.population_municipale, 10) || 0));
