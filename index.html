@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Mon canton et mes services — Maine-et-Loire</title>
+<title>ANJOU & MOI</title>
+<link rel="icon" type="image/png" href="https://www.maine-et-loire.fr/typo3conf/ext/ressource_maine-et-loire/img/icons/favicon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1492,7 +1493,11 @@ async function loadCantonCommunes(cantonShape) {
     const features = await loadCommunesGeojson();
     const within = communesWithinShape(features, cantonShape);
     if (!within.length) {
-  list.innerHTML = `<div class="pe-empty">Ce canton est inclus dans une seule commune (${'/* nom canton si tu l'as sous la main */'}) dont le centre ne tombe pas dans le contour. Voir la carte ci-dessus.</div>`;
+if (!within.length) {
+  list.innerHTML = `<div class="pe-empty">Ce canton correspond à une seule commune.</div>`;
+  document.getElementById('canton-stats').style.display = 'none';
+  return;
+}
   document.getElementById('canton-stats').style.display = 'none';
   return;
 }
