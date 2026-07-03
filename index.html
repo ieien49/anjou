@@ -1229,6 +1229,7 @@ function parseGeoPoint(val) {
 
 // ── Adresse courante ──────────────────────────────────
 function setAddress(lat, lon, label) {
+  document.getElementById('page-title-zone').style.display = 'none';
   showBriques(); 
   savedLat = lat; savedLon = lon;
   saveAddr(lat, lon, label);
@@ -1236,6 +1237,7 @@ function setAddress(lat, lon, label) {
   document.getElementById('current-addr').style.display = 'flex';
   document.getElementById('current-addr-text').textContent = label || `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   document.getElementById('clear-btn').style.display = 'inline-flex';
+  
   processCoords(lat, lon, label);
 }
 
@@ -1254,6 +1256,7 @@ function resetAllPanels() {
   document.getElementById('routes-map-empty').style.display = 'none';
   document.getElementById('communes-card').style.display = 'none';
   document.getElementById('empty-canton').style.display = 'block';
+  document.getElementById('page-title-zone').style.display = '';
   hideStatus();
   if (routesResizeObserver) { routesResizeObserver.disconnect(); routesResizeObserver = null; }
 if (routesMap) { routesMap.remove(); routesMap = null; }
