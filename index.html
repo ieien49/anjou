@@ -778,6 +778,9 @@ body.landing-active #landing-screen { display: flex; }
     <div class="ssec-title">Routes & mobilité</div>
   </div>
   <div class="service-section-body">
+  <p style="font-size:13px;color:var(--gris3);line-height:1.6;margin:0 0 18px;">
+    Aires de covoiturage, état des routes départementales en Maine-et-Loire, travaux en cours sur la voirie... Le Département facilite vos déplacements.
+  </p>
 <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
 
       <!-- Colonne gauche : carte -->
@@ -789,6 +792,7 @@ body.landing-active #landing-screen { display: flex; }
         <div id="routes-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
   <span style="display:inline-block;width:20px;height:3px;background:#1E22AE;vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Routes départementales
   <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C0392B;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Ouvrages d'art
+<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1A7A4A;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Aires de covoiturage
 </div>
         <div id="routes-map-empty" style="display:none;" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
       </div>
@@ -1216,6 +1220,7 @@ let routesBbox = null;
 let routesResizeObserver = null;
 let routesGeojson = null;
 let ouvragesData = null;
+let covoiturageData = null;
 let routesMapBuilt = false;
 let currentCantonShape = null;
 let peLoaded = false;
@@ -1380,6 +1385,7 @@ pdiprLayerRef = null;
 eclusesMapData = null;
 eclusesLayerRef = null;
 ouvragesData = null;
+covoiturageData = null;
 document.getElementById('ens-map-wrap').style.display = 'none';
 document.getElementById('ens-map-legend').style.display = 'none';
 document.getElementById('ens-map-empty').style.display = 'block';
@@ -2738,25 +2744,26 @@ if (routesMap) { routesMap.remove(); routesMap = null; }
     const where = `in_bbox(geo_point_2d, ${minLat}, ${minLon}, ${maxLat}, ${maxLon})`;
 
     const PAGE = 100;
-    async function fetchAll(dataset, extraParams) {
-      let offset = 0, all = [], going = true;
-      while (going) {
-        const url = `${ODS_BASE}/${dataset}/records?where=${encodeURIComponent(where)}&limit=${PAGE}&offset=${offset}${extraParams}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const batch = data.results || [];
-        all = all.concat(batch);
-        going = batch.length === PAGE && all.length < 600;
-        offset += PAGE;
-      }
-      return all;
-    }
+    async function fetchAll(dataset, extraParams, whereClause = where) {
+  let offset = 0, all = [], going = true;
+  while (going) {
+    const url = `${ODS_BASE}/${dataset}/records?where=${encodeURIComponent(whereClause)}&limit=${PAGE}&offset=${offset}${extraParams}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const batch = data.results || [];
+    all = all.concat(batch);
+    going = batch.length === PAGE && all.length < 600;
+    offset += PAGE;
+  }
+  return all;
+}
 
-    const [routesResults, traficResults, ouvragesResults] = await Promise.all([
+    const [routesResults, traficResults, ouvragesResults, covoiturageResults] = await Promise.all([
   fetchAll('224900019_routes-departementales-en-maine-et-loire', '&select=geo_shape,rd_axe'),
   fetchAll('224900019_trafic-des-routes-departementales-de-maine-et-loire', '&select=axe,niveau_trafic'),
-  fetchAll('224900019_ouvrages-dart-en-maine-et-loire', '&select=geo_point_2d,identifiant,nom_ouvrage,nature_oa,longueur,largeur,axe')
+  fetchAll('224900019_ouvrages-dart-en-maine-et-loire', '&select=geo_point_2d,identifiant,nom_ouvrage,nature_oa,longueur,largeur,axe'),
+  fetchAll('224900019_aires-de-covoiturage-en-maine-et-loire', '&select=geo_point,nom_lieu,ad_lieu,com_lieu,nbre_pl,ouvert,comm,axe_rd', `in_bbox(geo_point, ${minLat}, ${minLon}, ${maxLat}, ${maxLon})`)
 ]);
 
     const traficByAxe = {};
@@ -2781,6 +2788,22 @@ ouvragesData = ouvragesResults
     };
   })
   .filter(Boolean);
+
+covoiturageData = covoiturageResults
+  .map(r => {
+    const gp = parseGeoPoint(r.geo_point);
+    if (!gp) return null;
+    return {
+      lat: gp.lat, lon: gp.lon,
+      nom: r.nom_lieu || 'Aire de covoiturage',
+      adresse: [r.ad_lieu, r.com_lieu].filter(Boolean).join(', '),
+      places: r.nbre_pl || '',
+      ouvert: r.ouvert,
+      axe: (r.axe_rd || '').replace(/^49\s*/, '').trim()
+    };
+  })
+  .filter(Boolean);
+  
 
     routesGeojson = {
       type: 'FeatureCollection',
@@ -2839,6 +2862,20 @@ if (ouvragesData && ouvragesData.length) {
         (o.nature ? `<br><span style="font-size:11px;color:#8A93A3">${o.nature}</span>` : '') +
         (o.axe ? `<br><span style="font-size:11px;color:#8A93A3">${o.axe}</span>` : '') +
         ((o.longueur || o.largeur) ? `<br><span style="font-size:11px;color:#8A93A3">${o.longueur ? 'L. ' + o.longueur + ' m ' : ''}${o.largeur ? '· l. ' + o.largeur + ' m' : ''}</span>` : ''),
+        { sticky: true }
+      );
+  });
+}
+
+if (covoiturageData && covoiturageData.length) {
+  covoiturageData.forEach(c => {
+    L.circleMarker([c.lat, c.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#1A7A4A', fillOpacity: 1 })
+      .addTo(routesMap)
+      .bindTooltip(
+        `<strong>${c.nom}</strong>` +
+        (c.adresse ? `<br><span style="font-size:11px;color:#8A93A3">${c.adresse}</span>` : '') +
+        (c.places ? `<br><span style="font-size:11px;color:#8A93A3">${c.places} places</span>` : '') +
+        (c.ouvert === 'false' ? `<br><span style="font-size:11px;color:#C0392B">Fermée</span>` : ''),
         { sticky: true }
       );
   });
