@@ -2960,8 +2960,11 @@ function buildRoutesMap() {
     }
   }).addTo(routesMap);
 
-if (ouvragesData && ouvragesData.length) {
-  ouvragesData.forEach(o => {
+const routesCantonGeom = geometryOf(currentCantonShape);
+const ouvragesInCanton = (ouvragesData || []).filter(o => pointInGeometry([o.lon, o.lat], routesCantonGeom));
+
+if (ouvragesInCanton.length) {
+  ouvragesInCanton.forEach(o => {
     L.circleMarker([o.lat, o.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#C0392B', fillOpacity: 1 })
       .addTo(routesMap)
       .bindTooltip(
@@ -2973,6 +2976,9 @@ if (ouvragesData && ouvragesData.length) {
       );
   });
 }
+
+  const mask = buildMaskGeoJSON(currentCantonShape);
+  if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(routesMap);
 
 if (covoiturageData && covoiturageData.length) {
   covoiturageData.forEach(c => {
@@ -2987,9 +2993,6 @@ if (covoiturageData && covoiturageData.length) {
       );
   });
 }
-  
-  const mask = buildMaskGeoJSON(currentCantonShape);
-  if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(routesMap);
 
   // Mesure immédiate
   routesMap.invalidateSize(false);
