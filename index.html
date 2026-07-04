@@ -787,8 +787,9 @@ body.landing-active #landing-screen { display: flex; }
           <div id="routes-map" style="width:100%;height:100%;"></div>
         </div>
         <div id="routes-map-legend" style="display:none;font-size:11px;color:var(--gris2);margin-top:6px;padding:0 2px;">
-          <span style="display:inline-block;width:20px;height:3px;background:#1E22AE;vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Routes départementales
-        </div>
+  <span style="display:inline-block;width:20px;height:3px;background:#1E22AE;vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Routes départementales
+  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C0392B;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Ouvrages d'art
+</div>
         <div id="routes-map-empty" style="display:none;" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
       </div>
 
@@ -1214,6 +1215,7 @@ let routesMap = null, routesLayer = null;
 let routesBbox = null;
 let routesResizeObserver = null;
 let routesGeojson = null;
+let ouvragesData = null;
 let routesMapBuilt = false;
 let currentCantonShape = null;
 let peLoaded = false;
@@ -1377,6 +1379,7 @@ pdiprGeojsonData = null;
 pdiprLayerRef = null;
 eclusesMapData = null;
 eclusesLayerRef = null;
+ouvragesData = null;
 document.getElementById('ens-map-wrap').style.display = 'none';
 document.getElementById('ens-map-legend').style.display = 'none';
 document.getElementById('ens-map-empty').style.display = 'block';
@@ -2750,10 +2753,11 @@ if (routesMap) { routesMap.remove(); routesMap = null; }
       return all;
     }
 
-    const [routesResults, traficResults] = await Promise.all([
-      fetchAll('224900019_routes-departementales-en-maine-et-loire', '&select=geo_shape,rd_axe'),
-      fetchAll('224900019_trafic-des-routes-departementales-de-maine-et-loire', '&select=axe,niveau_trafic')
-    ]);
+    const [routesResults, traficResults, ouvragesResults] = await Promise.all([
+  fetchAll('224900019_routes-departementales-en-maine-et-loire', '&select=geo_shape,rd_axe'),
+  fetchAll('224900019_trafic-des-routes-departementales-de-maine-et-loire', '&select=axe,niveau_trafic'),
+  fetchAll('224900019_ouvrages-dart-en-maine-et-loire', '&select=geo_point_2d,identifiant,nom_ouvrage,nature_oa,longueur,largeur,axe')
+]);
 
     const traficByAxe = {};
     
@@ -2762,6 +2766,21 @@ if (routesMap) { routesMap.remove(); routesMap = null; }
       const key = r.axe.replace(/^49\s*/, '').trim();
       if (!traficByAxe[key]) traficByAxe[key] = r.niveau_trafic.trim();
     });
+
+ouvragesData = ouvragesResults
+  .map(r => {
+    const gp = r.geo_point_2d;
+    if (!gp) return null;
+    return {
+      lat: gp.lat, lon: gp.lon,
+      nom: r.nom_ouvrage || r.nature_oa || "Ouvrage d'art",
+      nature: r.nature_oa || '',
+      axe: (r.axe || '').replace(/^49\s*/, '').trim(),
+      longueur: r.longueur || '',
+      largeur: r.largeur || ''
+    };
+  })
+  .filter(Boolean);
 
     routesGeojson = {
       type: 'FeatureCollection',
@@ -2811,6 +2830,19 @@ function buildRoutesMap() {
     }
   }).addTo(routesMap);
 
+if (ouvragesData && ouvragesData.length) {
+  ouvragesData.forEach(o => {
+    L.circleMarker([o.lat, o.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#C0392B', fillOpacity: 1 })
+      .addTo(routesMap)
+      .bindTooltip(
+        `<strong>${o.nom}</strong>` +
+        (o.nature ? `<br><span style="font-size:11px;color:#8A93A3">${o.nature}</span>` : '') +
+        (o.axe ? `<br><span style="font-size:11px;color:#8A93A3">${o.axe}</span>` : '') +
+        ((o.longueur || o.largeur) ? `<br><span style="font-size:11px;color:#8A93A3">${o.longueur ? 'L. ' + o.longueur + ' m ' : ''}${o.largeur ? '· l. ' + o.largeur + ' m' : ''}</span>` : ''),
+        { sticky: true }
+      );
+  });
+}
   
   const mask = buildMaskGeoJSON(currentCantonShape);
   if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(routesMap);
