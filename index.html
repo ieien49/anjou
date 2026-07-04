@@ -588,12 +588,60 @@
   @media (max-width: 800px) {
   .routes-grid { grid-template-columns: 1fr !important; }
 }
+body.landing-active #site-banner,
+body.landing-active #site-header,
+body.landing-active #page-title-zone,
+body.landing-active #locate-bar,
+body.landing-active #main,
+body.landing-active footer {
+  display: none;
+}
+#landing-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--fond);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+body.landing-active #landing-screen { display: flex; }
+#landing-box {
+  background: #fff;
+  border-radius: var(--r);
+  padding: 32px 36px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
 
+#landing-intro { font-size: 13px; color: var(--gris3); line-height: 1.5; margin-bottom: 20px; }
+.landing-step h2 { font-size: 13px; font-weight: 700; color: var(--noir); margin-bottom: 10px; }
+#landing-locate-slot { display: flex; flex-direction: column; gap: 10px; }
+#landing-locate-slot .locate-search { width: 100%; }
+#landing-locate-slot .geo-btn { width: 100%; justify-content: center; }
 
 </style>
 </head>
 <body>
+<body class="landing-active">
 
+<div id="landing-screen">
+  <div id="landing-box">
+<div id="landing-header" style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+  <img src="https://www.maine-et-loire.fr/fileadmin/Departement/Conseil-departemental/Charte_2023/Departement_Anjou_rvb.jpg" alt="Département Anjou" style="height:52px;width:auto;object-fit:contain;flex-shrink:0;">
+  <div>
+    <div class="brand-text-title">Maine-et-Loire</div>
+    <h1 style="font-size:18px;color:var(--bleu);margin:4px 0 0;">Mon canton et mes services</h1>
+  </div>
+</div>
+    <div class="landing-step">
+      <h2>Votre adresse</h2>
+      <div id="landing-locate-slot"></div>
+    </div>
+  </div>
+</div>
 <div id="site-banner">
   <div class="inner">
     <span>Département de Maine-et-Loire</span>
@@ -1259,6 +1307,12 @@ function parseGeoPoint(val) {
 
 // ── Adresse courante ──────────────────────────────────
 function setAddress(lat, lon, label) {
+  document.body.classList.remove('landing-active');
+  const locateInner = document.querySelector('#locate-bar .inner');
+  if (!locateInner.contains(document.querySelector('.locate-search'))) {
+    locateInner.insertBefore(document.querySelector('.locate-search'), locateInner.firstChild);
+    locateInner.insertBefore(document.getElementById('geo-btn'), document.getElementById('clear-btn'));
+  }
   document.getElementById('page-title-zone').style.display = 'none';
   showBriques(); 
   savedLat = lat; savedLon = lon;
@@ -1278,6 +1332,10 @@ document.getElementById('clear-btn').addEventListener('click', () => {
   document.getElementById('clear-btn').style.display = 'none';
   document.getElementById('addr-input').value = '';
   resetAllPanels();
+
+  document.getElementById('landing-locate-slot').appendChild(document.querySelector('.locate-search'));
+  document.getElementById('landing-locate-slot').appendChild(document.getElementById('geo-btn'));
+  document.body.classList.add('landing-active');
 });
 
 async function loadBibliotheques(lat, lon) {
@@ -3050,7 +3108,10 @@ function initSubsectionAccordions() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initSubsectionAccordions();
-  
+
+  document.getElementById('landing-locate-slot').appendChild(document.querySelector('.locate-search'));
+  document.getElementById('landing-locate-slot').appendChild(document.getElementById('geo-btn'));
+
   const saved = loadSaved();
   if (saved && saved.lat && !isNaN(saved.lat)) {
     document.getElementById('addr-input').value = saved.label || '';
