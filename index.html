@@ -334,7 +334,12 @@
   .ssec-icon svg { width: 18px; height: 18px; }
   .ssec-title { font-size: 15px; font-weight: 700; color: var(--noir); }
   .service-section-body { padding: 16px 18px; }
-
+.section-intro {
+  font-size: 14px;
+  color: var(--bleu);
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
   .subsection { margin-bottom: 18px; }
   .subsection:last-child { margin-bottom: 0; }
   .subsection-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris2); margin-bottom: 10px; }
@@ -778,7 +783,7 @@ body.landing-active #landing-screen { display: flex; }
     <div class="ssec-title">Routes & mobilité</div>
   </div>
   <div class="service-section-body">
-  <p style="font-size:13px;color:var(--gris3);line-height:1.6;margin:0 0 18px;">
+  <p class="section-intro">
     Aires de covoiturage, état des routes départementales en Maine-et-Loire, travaux en cours sur la voirie... Le Département facilite vos déplacements.
   </p>
 <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
@@ -842,6 +847,9 @@ body.landing-active #landing-screen { display: flex; }
         <div class="ssec-title">Petite enfance</div>
       </div>
       <div class="service-section-body">
+      <p class="section-intro">
+    Préparation à l’arrivée d’un enfant, suivi de grossesse, conseils aux parents et futurs parents, adoption en Maine-et-Loire, développement des modes de garde et agrément des assistants maternels, métiers de l’enfance, actions de prévention… Le Département est un acteur majeur de la protection de l’enfance et de l’accompagnement des familles. 
+  </p>
 <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
 
   <!-- Colonne gauche : carte -->
@@ -893,6 +901,9 @@ body.landing-active #landing-screen { display: flex; }
         <div class="ssec-title">Collège</div>
       </div>
       <div class="service-section-body">
+      <p class="section-intro">
+    Collèges publics ou privés, restauration scolaire, actions éducatives… Le Département de Maine-et-Loire accompagne les collégiens et favorise leur réussite éducative.
+  </p>
 <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
 
   <!-- Colonne gauche : carte -->
@@ -936,8 +947,12 @@ body.landing-active #landing-screen { display: flex; }
       <div class="service-section-header">
         <div class="ssec-icon" style="background:var(--or-l)"><svg viewBox="0 0 24 24" style="fill:var(--or)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
         <div class="ssec-title">Social & solidarité</div>
+        
       </div>
       <div class="service-section-body">
+      <p class="section-intro">
+    Pilote des politiques de solidarités, le Département déploie sur le territoire des actions de prévention et de promotion de la santé, principalement à destination des publics jeunes et fragiles.
+  </p>
 <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
 
   <!-- Colonne gauche : carte -->
@@ -989,6 +1004,9 @@ body.landing-active #landing-screen { display: flex; }
         <div class="ssec-title">Autonomie</div>
       </div>
       <div class="service-section-body">
+      <p class="section-intro">
+    Chef de file de l'accompagnement des personnes âgées et des personnes en situation de handicap, le Département vous accompagne pour identifier la solution d'autonomie la plus adaptée : maintien à domicile, accueil en établissement ou en famille d'accueil. 
+  </p>
 <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
 
   <!-- Colonne gauche : carte -->
@@ -1001,6 +1019,7 @@ body.landing-active #landing-screen { display: flex; }
       <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C0392B;vertical-align:middle;margin-right:4px;"></span>MDA
       <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Foyer d'hébergement
       <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7b3fa0;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Foyer de vie
+  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2E86AB;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>CLIC    
     </div>
     <div id="autonomie-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
   </div>
@@ -1031,12 +1050,18 @@ body.landing-active #landing-screen { display: flex; }
       </div>
     </div>
 
-    <div>
+    <div class="subsection">
       <div class="subsection-title" style="margin-bottom:8px">Foyers de vie (30 km)</div>
-      <div class="item-grid" id="fv-card" style="grid-template-columns:1fr;">
+       <div class="item-grid" id="fv-card" style="grid-template-columns:1fr;">
         <div class="pe-empty">Identifiez une adresse…</div>
+       </div>
       </div>
-    </div>
+      <div class="subsection">
+  <div class="subsection-title" style="margin-bottom:8px">Centres locaux d'information et de coordination (CLIC)</div>
+  <div class="item-grid" id="clic-card" style="grid-template-columns:1fr;">
+    <div class="pe-empty">Identifiez une adresse…</div>
+  </div>
+</div>
 
   </div>
 </div>
@@ -1050,7 +1075,7 @@ body.landing-active #landing-screen { display: flex; }
     <div class="ssec-title">Environnement</div>
   </div>
   <div class="service-section-body">
-  <p style="font-size:13px;color:var(--gris3);line-height:1.6;margin:0 0 18px;">
+  <p class="section-intro">
     Soucieux du bien-être de ses habitants et des générations futures, le Département agit pour préserver les atouts et les ressources naturelles de Maine-et-Loire. Il œuvre pour la protection et la valorisation des Espaces naturels sensibles, intervient dans le domaine de l'eau, de l'assainissement et soutient l'aménagement des communes de Maine-et-Loire.
   </p>
   <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
@@ -1065,6 +1090,7 @@ body.landing-active #landing-screen { display: flex; }
       <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1A7A4A;vertical-align:middle;margin-right:4px;"></span>Espace naturel sensible
       <span style="display:inline-block;width:20px;height:3px;background:#C8922A;vertical-align:middle;margin-left:14px;margin-right:4px;border-radius:2px;"></span>Circuit de randonnée
       <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2E86AB;vertical-align:middle;margin-left:14px;margin-right:4px;"></span>Écluse
+	  <span style="display:inline-block;width:20px;height:3px;background:#1565C0;vertical-align:middle;margin-left:14px;margin-right:4px;border-radius:2px;"></span>Domaine public fluvial	      
     </div>
     <div id="ens-map-empty" class="pe-empty">Identifiez une adresse pour afficher la carte.</div>
   </div>
@@ -1105,6 +1131,9 @@ body.landing-active #landing-screen { display: flex; }
         <div class="ssec-title">Culture & patrimoine</div>
       </div>
 <div class="service-section-body">
+<p class="section-intro">
+    Texte culture
+  </p>
 <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
 
   <div>
@@ -1195,6 +1224,8 @@ const ODS_GAD  = ODS_BASE + "/224900019_organismes-de-garde-a-domicile-agrees-en
 const ODS_COMMUNES = ODS_BASE + "/224900019_communes-de-maine-et-loire/exports/geojson";
 const ODS_CULTURE_BASE = "https://data.culture.gouv.fr/api/explore/v2.1/catalog/datasets";
 const ODS_BIBLIOTHEQUES = ODS_CULTURE_BASE + "/adresses-des-bibliotheques-publiques/records";
+const ODS_CLIC = ODS_BASE + "/224900019_centres-locaux-dinformation-et-de-coordination-en-maine-et-loire/records";
+const ODS_DPF_GEOJSON = ODS_BASE + "/224900019_domaine-public-fluvial-de-maine-et-loire/exports/geojson";
 
 const NOMINATIM = "https://nominatim.openstreetmap.org/search";
 const INFOROUTES_ALERTES = "https://www.inforoutes49.fr/alertes";
@@ -1239,6 +1270,7 @@ let cultureMap = null, cultureMapBuilt = false, cultureResizeObserver = null;
 let biblioMapData = null, museesMapData = null;
 
 let fhMapData = null, fvMapData = null;
+let clicMapData = null;
 const MDA_LAT = 47.489523220926515, MDA_LON = -0.5639538316361441;
 
 // ── localStorage ─────────────────────────────────────
@@ -1384,6 +1416,8 @@ pdiprGeojsonData = null;
 pdiprLayerRef = null;
 eclusesMapData = null;
 eclusesLayerRef = null;
+dpfGeojsonData = null;
+dpfLayerRef = null;
 ouvragesData = null;
 covoiturageData = null;
 document.getElementById('ens-map-wrap').style.display = 'none';
@@ -1402,7 +1436,7 @@ document.getElementById('college-map-legend').style.display = 'none';
 document.getElementById('college-map-empty').style.display = 'block';
 document.getElementById('college-map-empty').textContent = 'Identifiez une adresse pour afficher la carte.';
   ['pe-eaje','pe-laep','pe-rpe','pe-mam','college-public-list','college-prive-list','css-card','fh-card','fv-card',
-   'ens-card','pdipr-card','ecluses-card','biblio-card','musees-card'].forEach(id => {
+   'ens-card','pdipr-card','ecluses-card','biblio-card','clic-card','musees-card'].forEach(id => {
     document.getElementById(id).innerHTML = '<div class="pe-empty">Identifiez une adresse…</div>';
   });
   document.getElementById('college-card').innerHTML = '<div class="pe-empty">Identifiez une adresse pour trouver votre collège de secteur.</div>';
@@ -1424,6 +1458,7 @@ mdsMapData = null;
 mdsLayerRef = null;
 annexesMapData = null;
 annexesLayerRef = null;
+clicMapData = null;
 
 if (autonomieResizeObserver) { autonomieResizeObserver.disconnect(); autonomieResizeObserver = null; }
 if (autonomieMap) { autonomieMap.remove(); autonomieMap = null; }
@@ -1700,6 +1735,7 @@ displayCanton(canton);
     loadENS(lat, lon);
     loadPdiprMapData(lat, lon);
     loadEclusesMapData(lat, lon);
+    loadDpfMapData(lat, lon);
     loadMusees(lat, lon);
 	loadBibliotheques(lat, lon);
     loadCSS(lat, lon);
@@ -1707,6 +1743,7 @@ displayCanton(canton);
     loadMDSAnnexes(lat, lon);
     loadFH(lat, lon);
     loadFV(lat, lon);
+    loadCLIC(lat, lon).then(items => { clicMapData = items; buildOrRefreshAutonomieMap(); });
     loadPDIPR(lat, lon);
     loadEcluses(lat, lon);
     loadPetiteEnfance(lat, lon);
@@ -2041,6 +2078,8 @@ const ODS_PDIPR_GEOJSON = ODS_BASE + "/224900019_circuits-ditinerance-touristiqu
 
 let ensMapBuilt = false;
 let ensGeojsonData = null;
+let dpfGeojsonData = null;
+let dpfLayerRef = null;
 let ensResizeObserver = null;
 let cssMap = null, cssMapBuilt = false, cssMapData = null, cssResizeObserver = null;
 let mdsMapData = null;
@@ -2058,7 +2097,10 @@ async function loadENS(lat, lon) {
   pdiprGeojsonData = null;
   pdiprLayerRef = null;
   eclusesMapData = null;
+  
   eclusesLayerRef = null;
+  dpfGeojsonData = null;
+dpfLayerRef = null;
   if (ensResizeObserver) { ensResizeObserver.disconnect(); ensResizeObserver = null; }
   if (ensMap) { ensMap.remove(); ensMap = null; }
   document.getElementById('ens-map-wrap').style.display = 'none';
@@ -2159,6 +2201,39 @@ function addEclusesLayerToMap() {
   ).addTo(ensMap);
 }
 
+async function loadDpfMapData(lat, lon) {
+  try {
+    const res = await fetch(ODS_DPF_GEOJSON);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const geojson = await res.json();
+    const features = (geojson.features || []).filter(f => {
+      const gp = f.properties && f.properties.geo_point_2d;
+      return gp && haversine(lat, lon, gp.lat, gp.lon) <= 15;
+    });
+    if (features.length) {
+      dpfGeojsonData = { type: 'FeatureCollection', features };
+      if (ensMap && ensMapBuilt) addDpfLayerToMap();
+    }
+  } catch(err) {
+    console.warn('Chargement domaine public fluvial (carte ENS) :', err.message);
+  }
+}
+
+function addDpfLayerToMap() {
+  if (!ensMap || !dpfGeojsonData || dpfLayerRef) return;
+  dpfLayerRef = L.geoJSON(dpfGeojsonData, {
+    style: { color: '#1565C0', weight: 3, opacity: 0.85 },
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(
+        `<strong>${p.dpf_nom || '—'}</strong><br><span style="font-size:11px;color:#8A93A3">${p.dpf_type || ''}</span>`,
+        { sticky: true }
+      );
+    }
+  }).addTo(ensMap);
+}
+
+
 function buildENSMap() {
   if (ensMapBuilt || !ensGeojsonData) return;
   const wrap = document.getElementById('ens-map-wrap');
@@ -2200,6 +2275,7 @@ function buildENSMap() {
 
   addPdiprLayerToMap();
   addEclusesLayerToMap();
+  addDpfLayerToMap();
 
   const bounds = ensLayer.getBounds();
   bounds.extend([savedLat, savedLon]);
@@ -2286,6 +2362,7 @@ if (annexesMapData && annexesMapData.length) annexesMapData.forEach(a => bounds.
 }
 
 function buildOrRefreshAutonomieMap() {
+if (fhMapData === null || fvMapData === null || clicMapData === null) return;
   if (fhMapData === null || fvMapData === null) return; // attend les deux réponses
   const section = document.querySelector('.service-section[data-theme="autonomie"]');
   if (section && section.classList.contains('theme-active')) buildAutonomieMap();
@@ -2331,10 +2408,20 @@ function buildAutonomieMap() {
       .addTo(autonomieMap)
       .bindTooltip(`<strong>${f.name}</strong><br><span style="font-size:11px;color:#8A93A3">Foyer de vie</span>`, { sticky: true });
   });
+  const clicInCanton = (clicMapData || []).filter(f => pointInGeometry([f.lon, f.lat], cantonGeomAutonomie));
+
+clicInCanton.forEach(f => {
+  L.circleMarker([f.lat, f.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#2E86AB', fillOpacity: 1 })
+    .addTo(autonomieMap)
+    .bindTooltip(`<strong>${f.name}</strong><br><span style="font-size:11px;color:#8A93A3">CLIC</span>`, { sticky: true });
+});
+
+
 
   const bounds = L.latLngBounds([[savedLat, savedLon], [MDA_LAT, MDA_LON]]);
   fhInCanton.forEach(f => bounds.extend([f.lat, f.lon]));
   fvInCanton.forEach(f => bounds.extend([f.lat, f.lon]));
+clicInCanton.forEach(f => bounds.extend([f.lat, f.lon]));
   
   autonomieMap.invalidateSize(false);
   autonomieMap.fitBounds(bounds, { padding: [20, 20], animate: false });
@@ -2646,6 +2733,24 @@ async function loadFoyers(lat, lon, url, containerId, typeLabel, radius = 30) {
 }
 function loadFH(lat, lon) { loadFoyers(lat, lon, ODS_FH, 'fh-card', "Foyer d'hébergement").then(items => { fhMapData = items; buildOrRefreshAutonomieMap(); }); }
 function loadFV(lat, lon) { loadFoyers(lat, lon, ODS_FV, 'fv-card', "Foyer de vie").then(items => { fvMapData = items; buildOrRefreshAutonomieMap(); }); }
+
+
+async function loadCLIC(lat, lon) {
+  const el = document.getElementById('clic-card');
+  el.innerHTML = '<div class="pe-empty"><span class="spinner"></span> Chargement…</div>';
+  try {
+    const res = await fetch(`${ODS_CLIC}?limit=50`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const items = (data.results||[]).map(r => {
+      const gp = r.geo_point_2d;
+      const dist = gp ? haversine(lat, lon, gp.lat, gp.lon) : 99;
+      return { _dist: dist, name: r.clic_nom || '—', type: '', addr: r.clic_adres || '', phone: r.clic_telep || '', email: r.clic_mail || '', web: r.url || '', lat: gp ? gp.lat : null, lon: gp ? gp.lon : null };
+    }).filter(i => i._dist <= 30).sort((a,b) => a._dist - b._dist);
+    renderPeItems('clic-card', items);
+    return items.filter(i => i.lat != null && i.lon != null);
+  } catch(err) { el.innerHTML = `<div class="pe-error">Erreur : ${err.message}</div>`; return []; }
+}
 
 
 async function loadPDIPR(lat, lon) {
