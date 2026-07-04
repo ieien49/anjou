@@ -1154,7 +1154,7 @@ body.landing-active #landing-screen { display: flex; }
       <div class="item-grid" id="biblio-card" style="grid-template-columns:1fr;"><div class="pe-empty">Identifiez une adresse…</div></div>
     </div>
     <div class="subsection">
-      <div class="subsection-title" style="margin-bottom:8px">Musées (30 km)</div>
+      <div class="subsection-title" style="margin-bottom:8px">Musées (15 km)</div>
       <div class="item-grid" id="musees-card" style="grid-template-columns:1fr;"><div class="pe-empty">Identifiez une adresse…</div></div>
     </div>
   </div>
@@ -2538,7 +2538,10 @@ function buildCultureMap() {
 
   if (currentCantonShape) {
     L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(cultureMap);
-  }
+    const mask = buildMaskGeoJSON(currentCantonShape);
+    if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(cultureMap);
+}
+
 
   L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
     .addTo(cultureMap)
@@ -2551,11 +2554,13 @@ function buildCultureMap() {
         .bindTooltip(`<strong>${i.name}</strong><br><span style="font-size:11px;color:#8A93A3">${label}</span>`, { sticky: true });
     });
   }
-  addGroup(biblioMapData, '#C8922A', 'Bibliothèque');
+const cantonGeomCulture = geometryOf(currentCantonShape);
+const biblioInCanton = (biblioMapData || []).filter(i => pointInGeometry([i.lon, i.lat], cantonGeomCulture));
+addGroup(biblioInCanton, '#C8922A', 'Bibliothèque');
   addGroup(museesMapData, '#7b3fa0', 'Musée');
 
   const bounds = L.latLngBounds([[savedLat, savedLon]]);
-  [biblioMapData, museesMapData].forEach(arr => (arr || []).forEach(i => bounds.extend([i.lat, i.lon])));
+  [biblioInCanton, museesMapData].forEach(arr => (arr || []).forEach(i => bounds.extend([i.lat, i.lon])));
 
   cultureMap.invalidateSize(false);
   cultureMap.fitBounds(bounds, { padding: [20, 20], animate: false });
@@ -2594,7 +2599,7 @@ async function loadMusees(lat, lon) {
       const coords = f.geometry?.coordinates;
       const dist = coords ? haversine(lat, lon, coords[1], coords[0]) : 999;
       return { _dist: dist, name: p.nom || '—', type: p.categories || '', addr: [p.adresse, [p.cp, p.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '), phone: p.telephone || '', web: p.site_internet || '' };
-    }).filter(i => i._dist <= 30).sort((a,b) => a._dist - b._dist);
+    }).filter(i => i._dist <= 15).sort((a,b) => a._dist - b._dist);
     renderPeItems('musees-card', items);
     museesMapData = items
       .map(i => {
