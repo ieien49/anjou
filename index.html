@@ -2305,6 +2305,8 @@ function buildAutonomieMap() {
 
   if (currentCantonShape) {
     L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(autonomieMap);
+    const mask = buildMaskGeoJSON(currentCantonShape);
+    if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(autonomieMap);
   }
 
   L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
@@ -2315,21 +2317,25 @@ function buildAutonomieMap() {
     .addTo(autonomieMap)
     .bindTooltip('<strong>Maison de l\'Autonomie</strong>', { sticky: true });
 
-  (fhMapData || []).forEach(f => {
+  const cantonGeomAutonomie = geometryOf(currentCantonShape);
+  const fhInCanton = (fhMapData || []).filter(f => pointInGeometry([f.lon, f.lat], cantonGeomAutonomie));
+  const fvInCanton = (fvMapData || []).filter(f => pointInGeometry([f.lon, f.lat], cantonGeomAutonomie));
+
+  fhInCanton.forEach(f => {
     L.circleMarker([f.lat, f.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#C8922A', fillOpacity: 1 })
       .addTo(autonomieMap)
       .bindTooltip(`<strong>${f.name}</strong><br><span style="font-size:11px;color:#8A93A3">Foyer d'hébergement</span>`, { sticky: true });
   });
-  (fvMapData || []).forEach(f => {
+  fvInCanton.forEach(f => {
     L.circleMarker([f.lat, f.lon], { radius: 6, color: '#fff', weight: 2, fillColor: '#7b3fa0', fillOpacity: 1 })
       .addTo(autonomieMap)
       .bindTooltip(`<strong>${f.name}</strong><br><span style="font-size:11px;color:#8A93A3">Foyer de vie</span>`, { sticky: true });
   });
 
   const bounds = L.latLngBounds([[savedLat, savedLon], [MDA_LAT, MDA_LON]]);
-  (fhMapData || []).forEach(f => bounds.extend([f.lat, f.lon]));
-  (fvMapData || []).forEach(f => bounds.extend([f.lat, f.lon]));
-
+  fhInCanton.forEach(f => bounds.extend([f.lat, f.lon]));
+  fvInCanton.forEach(f => bounds.extend([f.lat, f.lon]));
+  
   autonomieMap.invalidateSize(false);
   autonomieMap.fitBounds(bounds, { padding: [20, 20], animate: false });
   forceSvgRepaint(autonomieMap);
