@@ -41,21 +41,7 @@
   a { color: inherit; }
 
   /* ── Bandeau institutionnel ── */
-  #site-banner {
-    background: var(--bleu);
-    color: #fff;
-    font-size: 12px;
-    padding: 6px 0;
-  }
-  #site-banner .inner {
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 0 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: rgba(255,255,255,0.85);
-  }
+  
 
   #site-header {
     background: #fff;
@@ -119,7 +105,7 @@
   #locate-bar .inner {
     max-width: var(--maxw);
     margin: 0 auto;
-    padding: 14px 24px;
+    padding: 8px 24px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -133,12 +119,12 @@
   .locate-search-bar {
     background: var(--fond);
     border: 1.5px solid var(--gris1);
-    border-radius: 24px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 0 14px;
-    height: 42px;
+    height: 36px;
   }
   .locate-search-bar:focus-within { border-color: var(--bleu-m); }
   .locate-search-bar input {
@@ -178,8 +164,8 @@
     background: var(--bleu);
     color: #fff;
     border: none;
-    border-radius: 21px;
-    height: 42px;
+    border-radius: 18px;
+    height: 36px;
     padding: 0 18px;
     display: flex;
     align-items: center;
@@ -221,15 +207,13 @@
     margin: 0 auto;
     padding: 28px 24px 60px;
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     gap: 24px;
     align-items: start;
   }
-  @media (max-width: 900px) {
-    #main { grid-template-columns: 1fr; }
-  }
+  
 
-#main.sidebar-collapsed > aside { display: none; }
+
 #main.sidebar-collapsed { grid-template-columns: 1fr; }
 
   #status-banner {
@@ -255,21 +239,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ── Colonne gauche : canton ── */
-  .side-card {
-    background: #fff;
-    border: 1px solid var(--gris1);
-    border-radius: var(--r);
-    padding: 18px;
-    margin-bottom: 18px;
-  }
-  .card-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--or);
-    margin-bottom: 12px;
-  }
+  
   .canton-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
   .canton-icon {
     width: 44px; height: 44px; flex-shrink: 0;
@@ -642,12 +612,7 @@ body.landing-active #landing-screen { display: flex; }
     </div>
   </div>
 </div>
-<div id="site-banner">
-  <div class="inner">
-    <span>Département de Maine-et-Loire</span>
-    <span>maine-et-loire.fr</span>
-  </div>
-</div>
+
 
 <header id="site-header">
   <div class="inner">
@@ -657,7 +622,7 @@ body.landing-active #landing-screen { display: flex; }
       </div>
       <div>
         <div class="brand-text-title">Maine-et-Loire</div>
-        <div class="brand-text-sub">Le Département vous accompagne</div>
+        <div class="brand-text-sub">Le Département vous accompagne tout au long de votre vie</div>
       </div>
     </a>
     <div class="header-tagline">Outil de localisation des services départementaux</div>
@@ -699,53 +664,16 @@ body.landing-active #landing-screen { display: flex; }
 
   <!-- ── Colonne gauche : Canton ── -->
 
-  <aside id="canton-sidebar">
-    <div class="side-card">
-      <div class="card-label">Mon canton</div>
-      <div id="canton-card" style="display:none">
-        <div class="canton-header">
-          <div class="canton-icon">
-            <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
-          </div>
-          <div>
-            <div id="canton-nom" class="canton-nom">—</div>
-            <div id="canton-code" class="canton-code"></div>
-            <div class="canton-pill">
-              <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-              Maine-et-Loire · 49
-            </div>
-          </div>
-        </div>
-        <div id="canton-map-wrap"><div id="canton-map"></div></div>
-        <div class="stat-grid" id="canton-stats">
-          <div class="stat-box"><div class="stat-num" id="stat-pop">—</div><div class="stat-lbl">Habitants</div></div>
-          <div class="stat-box"><div class="stat-num" id="stat-communes">—</div><div class="stat-lbl">Communes</div></div>
-        </div>
-      </div>
-      <div id="empty-canton" class="empty-state">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
-        </div>
-        <div class="empty-title">Aucune adresse renseignée</div>
-        <div class="empty-sub">Saisissez une adresse ou utilisez la géolocalisation pour identifier votre canton.</div>
-      </div>
-    </div>
-
-    <div class="side-card" id="elus-card" style="display:none">
-      <div class="card-label">Conseillers départementaux</div>
-      <div id="elus-list"></div>
-    </div>
-
-    <div class="side-card" id="communes-card" style="display:none">
-      <div class="card-label">Communes du canton</div>
-      <div class="communes-list" id="canton-communes-list"></div>
-    </div>
-  </aside>
+  
 
   <!-- ── Colonne droite : Services ── -->
   <div id="services-col">
 
     <div id="briques-grid">
+      <div class="brique" data-theme="canton">
+  <div class="brique-icon" style="background:#fff"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg></div>
+  <div class="brique-label">Mon canton</div>
+</div>
       <div class="brique" data-theme="routes">
         <div class="brique-icon" style="background:#fff"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--bleu)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-road-icon lucide-road"><path d="M12 17v4"/><path d="M12 5V3"/><path d="M12 9v3"/><path d="M2.077 18.449A2 2 0 0 0 4 21h16a2 2 0 0 0 1.924-2.55l-4-14A2 2 0 0 0 16 3H8a2 2 0 0 0-1.924 1.45z"/></svg></div>
         <div class="brique-label">Routes & mobilité</div>
@@ -781,7 +709,66 @@ body.landing-active #landing-screen { display: flex; }
       </div>
     </div>
 
-   
+   <section class="service-section" data-theme="canton">
+  <div class="service-section-header">
+    <div class="ssec-icon" style="background:var(--bleu-l)"><svg viewBox="0 0 24 24" style="fill:var(--bleu)"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg></div>
+    <div class="ssec-title">Mon canton</div>
+  </div>
+  <div class="service-section-body">
+    <div class="routes-grid" style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;">
+
+      <div>
+        <div class="subsection-title" style="margin-bottom:8px">Carte du canton</div>
+        <div id="canton-map-wrap" style="border-radius:8px;overflow:hidden;border:1px solid var(--gris1);height:420px;display:none;">
+          <div id="canton-map" style="width:100%;height:100%;"></div>
+        </div>
+        <div id="empty-canton" class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+          </div>
+          <div class="empty-title">Aucune adresse renseignée</div>
+          <div class="empty-sub">Saisissez une adresse ou utilisez la géolocalisation pour identifier votre canton.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="subsection">
+          <div class="subsection-title" style="margin-bottom:8px">Identité du canton</div>
+          <div id="canton-card" style="display:none">
+            <div class="canton-header">
+              <div class="canton-icon">
+                <svg viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+              </div>
+              <div>
+                <div id="canton-nom" class="canton-nom">—</div>
+                <div id="canton-code" class="canton-code"></div>
+                <div class="canton-pill">
+                  <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                  Maine-et-Loire · 49
+                </div>
+              </div>
+            </div>
+            <div class="stat-grid" id="canton-stats">
+              <div class="stat-box"><div class="stat-num" id="stat-pop">—</div><div class="stat-lbl">Habitants</div></div>
+              <div class="stat-box"><div class="stat-num" id="stat-communes">—</div><div class="stat-lbl">Communes</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection" id="elus-card" style="display:none">
+          <div class="subsection-title" style="margin-bottom:8px">Conseillers départementaux</div>
+          <div id="elus-list"></div>
+        </div>
+
+        <div class="subsection" id="communes-card" style="display:none">
+          <div class="subsection-title" style="margin-bottom:8px">Communes du canton</div>
+          <div class="communes-list" id="canton-communes-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
       
 
     <!-- Routes & mobilité -->
@@ -1220,6 +1207,8 @@ let pdiprLayerRef = null;
 let eclusesMapData = null;
 let eclusesLayerRef = null;
 let cantonMap = null;
+let cantonMapBuilt = false;
+let cantonResizeObserver = null;
 let ensMap = null;
 let routesMap = null, routesLayer = null;
 let routesBbox = null;
@@ -1596,36 +1585,52 @@ function communesWithinShape(features, cantonShape) {
   });
 }
 
-async function initCantonMap(geoShape) {
+function buildCantonMap() {
+  if (cantonMapBuilt || !currentCantonShape) return;
   const wrap = document.getElementById('canton-map-wrap');
   wrap.style.display = 'block';
-  if (cantonMap) { cantonMap.remove(); cantonMap = null; }
-  cantonCommunesLayer = null;
-  cantonMap = L.map('canton-map', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
+  document.getElementById('empty-canton').style.display = 'none';
+
+  cantonMap = L.map('canton-map', { zoomControl: true, attributionControl: false, scrollWheelZoom: false });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(cantonMap);
 
-  const mask = buildMaskGeoJSON(geoShape);
-  if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false, fillRule: 'evenodd' } }).addTo(cantonMap);
+  const mask = buildMaskGeoJSON(currentCantonShape);
+  if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(cantonMap);
 
-  const layer = L.geoJSON(geoShape, {
+  const cantonLayer = L.geoJSON(currentCantonShape, {
     style: { color: '#1E22AE', weight: 2, fillColor: '#ECEDFB', fillOpacity: 0.5 }
   }).addTo(cantonMap);
 
-  // fallback : si le contour dept ne charge pas à temps, on cadre au moins sur le canton
-  cantonMap.fitBounds(layer.getBounds(), { padding: [12, 12] });
+  cantonMapBuilt = true;
 
-  try {
-    const deptRes = await fetch('https://data.maine-et-loire.fr/api/explore/v2.1/shared/datasets/234400034_departements-des-pays-de-la-loire@paysdelaloire/exports/geojson?lang=fr&refine=depart%3A%22MAINE-ET-LOIRE%22&timezone=Europe%2FBerlin');
-    if (!deptRes.ok) throw new Error(`HTTP ${deptRes.status}`);
-    const deptGeojson = await deptRes.json();
-    const deptLayer = L.geoJSON(deptGeojson, {
-      style: { color: '#1e3a5f', weight: 1.5, opacity: 0.8, fill: false }
-    }).addTo(cantonMap);
-    cantonMap.fitBounds(deptLayer.getBounds(), { padding: [8, 8] });
-  } catch (err) {
-    console.warn('Contour département indisponible :', err.message);
-  }
+  fetch('https://data.maine-et-loire.fr/api/explore/v2.1/shared/datasets/234400034_departements-des-pays-de-la-loire@paysdelaloire/exports/geojson?lang=fr&refine=depart%3A%22MAINE-ET-LOIRE%22&timezone=Europe%2FBerlin')
+    .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+    .then(deptGeojson => {
+      const deptLayer = L.geoJSON(deptGeojson, { style: { color: '#1e3a5f', weight: 1.5, opacity: 0.8, fill: false } }).addTo(cantonMap);
+
+      const fitDept = () => {
+        if (!cantonMap) return;
+        cantonMap.invalidateSize(false);
+        cantonMap.fitBounds(deptLayer.getBounds(), { padding: [20, 20], animate: false });
+        forceSvgRepaint(cantonMap);
+      };
+
+      fitDept();
+      requestAnimationFrame(() => requestAnimationFrame(fitDept));
+
+      cantonResizeObserver = new ResizeObserver(fitDept);
+      cantonResizeObserver.observe(wrap);
+    })
+    .catch(err => {
+      console.warn('Contour département indisponible :', err.message);
+      // repli : zoom sur le canton si le département échoue
+      cantonMap.invalidateSize(false);
+      cantonMap.fitBounds(cantonLayer.getBounds(), { padding: [20, 20], animate: false });
+      forceSvgRepaint(cantonMap);
+    });
 }
+
+
 
 // ── Communes du canton ────────────────────────────────
 async function loadCantonCommunes(cantonShape) {
@@ -1675,7 +1680,8 @@ async function processCoords(lat, lon) {
       return;
     }
     hideStatus();
-    displayCanton(canton);
+displayCanton(canton);
+    showTheme('canton');
     loadElus(canton.canton_insee || canton.canton_code || '', canton.canton_nom || '');
     loadCantonCommunes(canton.geo_shape);    
     loadCollege(lat, lon);
@@ -1716,9 +1722,17 @@ function displayCanton(r) {
   document.getElementById('canton-nom').textContent = r.canton_nom || 'Canton inconnu';
   document.getElementById('canton-code').textContent = r.canton_code ? `Code INSEE : ${r.canton_code}` : '';
   document.getElementById('canton-card').style.display = 'block';
-  currentCantonShape = r.geo_shape || null;   // ← ligne ajoutée
-  if (r.geo_shape) initCantonMap(r.geo_shape);
+  currentCantonShape = r.geo_shape || null;
+  cantonMapBuilt = false;
+  if (cantonResizeObserver) { cantonResizeObserver.disconnect(); cantonResizeObserver = null; }
+  if (cantonMap) { cantonMap.remove(); cantonMap = null; }
+  document.getElementById('canton-map-wrap').style.display = 'none';
+  if (r.geo_shape) {
+    const section = document.querySelector('.service-section[data-theme="canton"]');
+    if (section && section.classList.contains('theme-active')) buildCantonMap();
+  }
 }
+
 async function loadElus(code, nom) {
   const card = document.getElementById('elus-card');
   const list = document.getElementById('elus-list');
@@ -2989,6 +3003,17 @@ function showTheme(theme) {
     });
   }
 
+if (theme === 'canton') {
+  waitForStableSize(document.querySelector('.service-section[data-theme="canton"]'), () => {
+    if (!cantonMapBuilt) {
+      buildCantonMap();
+    } else if (cantonMap) {
+      cantonMap.invalidateSize(false);
+      forceSvgRepaint(cantonMap);
+    }
+  });
+}
+
 if (theme === 'environnement') {
   waitForStableSize(document.querySelector('.service-section[data-theme="environnement"]'), () => {
     if (!ensMapBuilt) {
@@ -3080,7 +3105,9 @@ document.querySelectorAll('.brique').forEach(b => {
 function initSubsectionAccordions() {
   document.querySelectorAll('.service-section-body').forEach(body => {
     const subs = Array.from(body.querySelectorAll('.subsection'));
+    const isCanton = body.closest('.service-section')?.dataset.theme === 'canton';
     subs.forEach((sub, idx) => {
+      const openByDefault = isCanton ? idx < 2 : idx === 0;
       const titleEl = sub.querySelector(':scope > .subsection-title');
       if (!titleEl) return;
       const titleText = titleEl.textContent;
@@ -3091,11 +3118,11 @@ function initSubsectionAccordions() {
 
       const header = document.createElement('div');
       header.className = 'subsection-header';
-      header.innerHTML = `<div class="subsection-title">${titleText}</div>
-        <svg class="subsection-arrow${idx === 0 ? ' open' : ''}" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>`;
+header.innerHTML = `<div class="subsection-title">${titleText}</div>
+        <svg class="subsection-arrow${openByDefault ? ' open' : ''}" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>`;
 
       const content = document.createElement('div');
-      content.className = 'subsection-content' + (idx === 0 ? ' open' : '');
+      content.className = 'subsection-content' + (openByDefault ? ' open' : '');
       rest.forEach(el => content.appendChild(el));
 
       sub.appendChild(header);
