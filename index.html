@@ -1179,6 +1179,7 @@ body.landing-active #landing-screen { display: flex; }
 <script>
 // ── APIs ─────────────────────────────────────────────
 const ODS_BASE     = "https://data.maine-et-loire.fr/api/explore/v2.1/catalog/datasets";
+const url = 'https://data.maine-et-loire.fr/api/explore/v2.1/shared/datasets/234400034_departements-des-pays-de-la-loire@paysdelaloire/exports/geojson?lang=fr&refine=depart%3A%22MAINE-ET-LOIRE%22&timezone=Europe%2FBerlin';
 const ODS_CANTONS  = ODS_BASE + "/224900019_cantons-de-maine-et-loire/records";
 const ODS_MDS      = ODS_BASE + "/224900019_territoire-des-maisons-departementales-des-solidarites-maine-et-loire/records";
 const ODS_COLLEGES = ODS_BASE + "/224900019_sectorisation-colleges-publics-maine-et-loire/records";
@@ -1602,25 +1603,27 @@ async function initCantonMap(geoShape) {
   cantonCommunesLayer = null;
   cantonMap = L.map('canton-map', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(cantonMap);
+
+  const mask = buildMaskGeoJSON(geoShape);
+  if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false, fillRule: 'evenodd' } }).addTo(cantonMap);
+
   const layer = L.geoJSON(geoShape, {
     style: { color: '#1E22AE', weight: 2, fillColor: '#ECEDFB', fillOpacity: 0.5 }
   }).addTo(cantonMap);
+
+  // fallback : si le contour dept ne charge pas à temps, on cadre au moins sur le canton
   cantonMap.fitBounds(layer.getBounds(), { padding: [12, 12] });
 
   try {
-    const features = await loadCommunesGeojson();
-    const within = communesWithinShape(features, geoShape);
-    if (within.length && cantonMap) {
-      cantonCommunesLayer = L.geoJSON({ type: 'FeatureCollection', features: within }, {
-        style: { color: '#C8922A', weight: 1.2, fillOpacity: 0, dashArray: '3,3' },
-        onEachFeature: (feature, lyr) => {
-          const nom = feature.properties && feature.properties.com_nom;
-          if (nom) lyr.bindTooltip(nom, { sticky: true });
-        }
-      }).addTo(cantonMap);
-    }
+    const deptRes = await fetch('https://data.maine-et-loire.fr/api/explore/v2.1/shared/datasets/234400034_departements-des-pays-de-la-loire@paysdelaloire/exports/geojson?lang=fr&refine=depart%3A%22MAINE-ET-LOIRE%22&timezone=Europe%2FBerlin');
+    if (!deptRes.ok) throw new Error(`HTTP ${deptRes.status}`);
+    const deptGeojson = await deptRes.json();
+    const deptLayer = L.geoJSON(deptGeojson, {
+      style: { color: '#1e3a5f', weight: 1.5, opacity: 0.8, fill: false }
+    }).addTo(cantonMap);
+    cantonMap.fitBounds(deptLayer.getBounds(), { padding: [8, 8] });
   } catch (err) {
-    console.warn('Contours communes indisponibles :', err.message);
+    console.warn('Contour département indisponible :', err.message);
   }
 }
 
