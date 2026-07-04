@@ -2242,6 +2242,8 @@ function buildCssMap() {
 
   if (currentCantonShape) {
     L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(cssMap);
+    const mask = buildMaskGeoJSON(currentCantonShape);
+    if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(cssMap);
   }
 
   L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
@@ -2370,8 +2372,11 @@ function buildPeMap() {
   peMap.setView([savedLat, savedLon], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(peMap);
 
+let cantonLayerPe = null;
   if (currentCantonShape) {
-    L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(peMap);
+cantonLayerPe = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.15 } }).addTo(peMap);
+    const mask = buildMaskGeoJSON(currentCantonShape);
+if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#f4f5f9', fillOpacity: 1, stroke: false } }).addTo(peMap);
   }
 
   L.circleMarker([savedLat, savedLon], { radius: 7, color: '#1E22AE', fillColor: '#3A3FD0', fillOpacity: 0.9, weight: 2 })
@@ -2385,13 +2390,16 @@ function buildPeMap() {
         .bindTooltip(`<strong>${i.name}</strong><br><span style="font-size:11px;color:#8A93A3">${label}</span>`, { sticky: true });
     });
   }
-  addGroup(peEajeMapData, '#1E22AE', 'Accueil jeunes enfants');
-  addGroup(peLaepMapData, '#1A7A4A', 'LAEP');
-  addGroup(peRpeMapData, '#C8922A', 'Relais petite enfance');
-  addGroup(peMamMapData, '#7b3fa0', 'MAM');
+  const cantonGeom = geometryOf(currentCantonShape);
+function filterInCanton(list) {
+  return (list || []).filter(i => pointInGeometry([i.lon, i.lat], cantonGeom));
+}
+addGroup(filterInCanton(peEajeMapData), '#1E22AE', 'Accueil jeunes enfants');
+addGroup(filterInCanton(peLaepMapData), '#1A7A4A', 'LAEP');
+addGroup(filterInCanton(peRpeMapData), '#C8922A', 'Relais petite enfance');
+addGroup(filterInCanton(peMamMapData), '#7b3fa0', 'MAM');
 
-  const bounds = L.latLngBounds([[savedLat, savedLon]]);
-  [peEajeMapData, peLaepMapData, peRpeMapData, peMamMapData].forEach(arr => (arr || []).forEach(i => bounds.extend([i.lat, i.lon])));
+  const bounds = cantonLayerPe ? cantonLayerPe.getBounds() : L.latLngBounds([[savedLat, savedLon]]);
 
   peMap.invalidateSize(false);
   peMap.fitBounds(bounds, { padding: [20, 20], animate: false });
