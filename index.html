@@ -3368,6 +3368,7 @@ function waitForTiles(map) {
 function captureLeafletMap(map) {
   return new Promise((resolve, reject) => {
     leafletImage(map, (err, canvas) => {
+      console.log('leafletImage callback:', { err, canvasWidth: canvas?.width, canvasHeight: canvas?.height });
       if (err) reject(err); else resolve(canvas);
     });
   });
