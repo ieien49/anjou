@@ -3397,6 +3397,7 @@ async function buildLocatorMapImage() {
 
   await new Promise(r => setTimeout(r, 300));
 map.invalidateSize(false);
+	console.log('layers count:', Object.keys(map._layers).length);
 const rawCanvas = await captureLeafletMap(map);
 const canvas = document.createElement('canvas');
 canvas.width = rawCanvas.width;
@@ -3472,6 +3473,7 @@ async function buildCombinedMapImage() {
   map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15] });
   await new Promise(r => setTimeout(r, 200));
 map.invalidateSize(false);
+	console.log('layers count:', Object.keys(map._layers).length);
 const rawCanvas = await captureLeafletMap(map);
 const canvas = document.createElement('canvas');
 canvas.width = rawCanvas.width;
