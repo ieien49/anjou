@@ -3365,7 +3365,7 @@ function waitForTiles(map) {
 async function buildLocatorMapImage() {
   const cantons = await loadAllCantonsGeojson();
   const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:380px;height:380px;background:#fff;';
+  container.style.cssText = 'position:fixed;left:0;top:0;width:380px;height:380px;background:#fff;opacity:0;pointer-events:none;z-index:-1;';
   document.body.appendChild(container);
   const map = L.map(container, { zoomControl: false, attributionControl: false, dragging: false, fadeAnimation: false });
 
@@ -3385,6 +3385,7 @@ async function buildLocatorMapImage() {
   map.fitBounds(allLayer.getBounds(), { padding: [4, 4] });
 
   await new Promise(r => setTimeout(r, 300));
+	map.invalidateSize(false);
   const canvas = await html2canvas(container, { backgroundColor: '#ffffff', scale: 2 });
   map.remove();
   document.body.removeChild(container);
@@ -3400,7 +3401,7 @@ async function buildCombinedMapImage() {
   const captureW = 900;
   const captureH = Math.round(captureW * boxH / boxW);
   const container = document.createElement('div');
-  container.style.cssText = `position:fixed;left:-9999px;top:0;width:${captureW}px;height:${captureH}px;background:#fff;`;
+  container.style.cssText = `position:fixed;left:0;top:0;width:${captureW}px;height:${captureH}px;background:#fff;opacity:0;pointer-events:none;z-index:-1;`;
   document.body.appendChild(container);  const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
   map.fitBounds(L.geoJSON(currentCantonShape).getBounds(), { padding: [15, 15] });
 
@@ -3453,6 +3454,7 @@ async function buildCombinedMapImage() {
   map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15] });
   await waitForTiles(map);
   await new Promise(r => setTimeout(r, 200));
+	map.invalidateSize(false);
   const canvas = await html2canvas(container, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
   map.remove();
   document.body.removeChild(container);
