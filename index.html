@@ -760,6 +760,7 @@ body.landing-active #landing-screen { display: flex; }
               <div class="stat-box"><div class="stat-num" id="stat-pop">—</div><div class="stat-lbl">Habitants</div></div>
               <div class="stat-box"><div class="stat-num" id="stat-communes">—</div><div class="stat-lbl">Communes</div></div>
             </div>
+            <button id="btn-fiche-pdf" onclick="generateFichePDF()" style="margin-top:10px;width:100%;padding:9px 14px;background:var(--bleu);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;">Télécharger la fiche PDF du canton</button>
           </div>
         </div>
 
@@ -1180,6 +1181,8 @@ body.landing-active #landing-screen { display: flex; }
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ── APIs ─────────────────────────────────────────────
 const ODS_BASE     = "https://data.maine-et-loire.fr/api/explore/v2.1/catalog/datasets";
@@ -1237,6 +1240,7 @@ let ouvragesData = null;
 let covoiturageData = null;
 let routesMapBuilt = false;
 let currentCantonShape = null;
+let currentCantonCode = null;
 let peLoaded = false;
 let communesGeojsonCache = null;
 let communesLoadPromise = null;
@@ -1752,6 +1756,7 @@ function displayCanton(r) {
   document.getElementById('canton-code').textContent = r.canton_code ? `Code INSEE : ${r.canton_code}` : '';
   document.getElementById('canton-card').style.display = 'block';
   currentCantonShape = r.geo_shape || null;
+  currentCantonCode = r.canton_code || null;
   cantonMapBuilt = false;
   if (cantonResizeObserver) { cantonResizeObserver.disconnect(); cantonResizeObserver = null; }
   if (cantonMap) { cantonMap.remove(); cantonMap = null; }
@@ -3327,6 +3332,248 @@ document.addEventListener('DOMContentLoaded', () => {
     resetAllPanels();
   }
 });
+
+	// ══════════════════════════════════════════════
+// FICHE PDF RÉCAPITULATIVE DU CANTON
+// ══════════════════════════════════════════════
+
+let allCantonsGeojsonCache = null;
+
+async function loadAllCantonsGeojson() {
+  if (allCantonsGeojsonCache) return allCantonsGeojsonCache;
+  const res = await fetch(`${ODS_CANTONS}?select=canton_code,canton_nom,geo_shape&limit=100`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} (cantons)`);
+  const data = await res.json();
+  allCantonsGeojsonCache = (data.results || []).filter(r => r.geo_shape);
+  return allCantonsGeojsonCache;
+}
+
+function waitForTiles(map) {
+  return new Promise(resolve => {
+    let pending = 0, done = false;
+    map.eachLayer(l => {
+      if (l instanceof L.TileLayer) {
+        pending++;
+        l.once('load', () => { if (--pending <= 0 && !done) { done = true; resolve(); } });
+      }
+    });
+    if (pending === 0) { resolve(); return; }
+    setTimeout(() => { if (!done) { done = true; resolve(); } }, 4000);
+  });
+}
+
+async function buildLocatorMapImage() {
+  const cantons = await loadAllCantonsGeojson();
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:380px;height:380px;background:#fff;';
+  document.body.appendChild(container);
+  const map = L.map(container, { zoomControl: false, attributionControl: false, dragging: false, fadeAnimation: false });
+
+  cantons.forEach(c => {
+    const isCurrent = currentCantonCode && c.canton_code === currentCantonCode;
+    L.geoJSON(c.geo_shape, {
+      style: {
+        color: isCurrent ? '#1E22AE' : '#B7BDC9',
+        weight: isCurrent ? 2 : 1,
+        fillColor: isCurrent ? '#1E22AE' : '#F4F5F9',
+        fillOpacity: isCurrent ? 0.35 : 0.5
+      }
+    }).addTo(map);
+  });
+
+  const allLayer = L.geoJSON(cantons.map(c => c.geo_shape));
+  map.fitBounds(allLayer.getBounds(), { padding: [4, 4] });
+
+  await new Promise(r => setTimeout(r, 300));
+  const canvas = await html2canvas(container, { backgroundColor: '#ffffff', scale: 2 });
+  map.remove();
+  document.body.removeChild(container);
+  return canvas.toDataURL('image/png');
+}
+
+async function buildCombinedMapImage() {
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:760px;height:900px;background:#fff;';
+  document.body.appendChild(container);
+  const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, crossOrigin: true }).addTo(map);
+
+  const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.08 } }).addTo(map);
+  const geom = geometryOf(currentCantonShape);
+  const inCanton = (arr) => (arr || []).filter(o => o && o.lat != null && o.lon != null && pointInGeometry([o.lon, o.lat], geom));
+  const marker = (o, color) => L.circleMarker([o.lat, o.lon], { radius: 5, color: '#fff', weight: 1.5, fillColor: color, fillOpacity: 1 }).addTo(map);
+
+  if (routesGeojson && routesGeojson.features.length) {
+    L.geoJSON(routesGeojson, { style: { color: '#1E22AE', weight: 2.5, opacity: 0.85 } }).addTo(map);
+  }
+  inCanton(covoiturageData).forEach(o => marker(o, '#1A7A4A'));
+
+  if (collegeMapData) {
+    inCanton(collegeMapData.publics).forEach(o => marker(o, '#2E5BFF'));
+    inCanton(collegeMapData.prives).forEach(o => marker(o, '#2E5BFF'));
+  }
+
+  if (mdsMapData && mdsMapData.lat != null && pointInGeometry([mdsMapData.lon, mdsMapData.lat], geom)) {
+    marker(mdsMapData, '#C0392B');
+  }
+  inCanton(annexesMapData).forEach(o => marker(o, '#C0392B'));
+
+  inCanton(cssMapData).forEach(o => marker(o, '#C8922A'));
+
+  if (ensGeojsonData) {
+    L.geoJSON(ensGeojsonData, {
+      filter: f => { const gp = (f.properties || {}).geo_point_2d; return gp && pointInGeometry([gp.lon, gp.lat], geom); },
+      pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 5, color: '#fff', weight: 1.5, fillColor: '#2E7D32', fillOpacity: 1 })
+    }).addTo(map);
+  }
+
+  inCanton((eclusesMapData || []).map(r => r.geo_point_2d ? { lat: r.geo_point_2d.lat, lon: r.geo_point_2d.lon } : null))
+    .forEach(o => marker(o, '#2E86AB'));
+
+  if (dpfGeojsonData) {
+    L.geoJSON(dpfGeojsonData, { style: { color: '#1565C0', weight: 2.5, opacity: 0.85 } }).addTo(map);
+  }
+
+  inCanton(biblioMapData).forEach(o => marker(o, '#8B5E34'));
+
+  map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15] });
+  await waitForTiles(map);
+  await new Promise(r => setTimeout(r, 200));
+  const canvas = await html2canvas(container, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+  map.remove();
+  document.body.removeChild(container);
+  return canvas.toDataURL('image/png');
+}
+
+function fmtCount(n) { return (n == null) ? '—' : String(n); }
+
+async function generateFichePDF() {
+  if (!currentCantonShape) { alert('Identifiez une adresse avant de générer la fiche.'); return; }
+  const btn = document.getElementById('btn-fiche-pdf');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Génération en cours…';
+
+  try {
+    const cantonNom = document.getElementById('canton-nom').textContent;
+    const cantonCode = document.getElementById('canton-code').textContent;
+    const pop = document.getElementById('stat-pop').textContent;
+    const communes = document.getElementById('stat-communes').textContent;
+
+    const [locatorImg, combinedImg] = await Promise.all([
+      buildLocatorMapImage(),
+      buildCombinedMapImage()
+    ]);
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = 210, margin = 12;
+
+    // ── RECTO ──────────────────────────────
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(30, 34, 174);
+    doc.text('Fiche canton — ' + cantonNom, margin, 18);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100);
+    doc.text(cantonCode + '  ·  ' + pop + ' habitants  ·  ' + communes + ' communes', margin, 24);
+    doc.text('Généré le ' + new Date().toLocaleDateString('fr-FR'), margin, 29);
+
+    doc.addImage(locatorImg, 'PNG', margin, 34, 55, 55);
+    doc.setFontSize(8); doc.setTextColor(120);
+    doc.text('Localisation dans le département', margin, 92);
+
+    doc.addImage(combinedImg, 'PNG', margin + 60, 34, pageW - margin * 2 - 60, 92);
+
+    // Légende
+    let ly = 132;
+    const legendItems = [
+      ['Routes départementales', '#1E22AE', 'line'],
+      ['Aires de covoiturage', '#1A7A4A', 'dot'],
+      ['Collèges', '#2E5BFF', 'dot'],
+      ['MDS et annexes', '#C0392B', 'dot'],
+      ['CSS', '#C8922A', 'dot'],
+      ['Espaces naturels sensibles', '#2E7D32', 'dot'],
+      ['Écluses', '#2E86AB', 'dot'],
+      ['Domaine public fluvial', '#1565C0', 'line'],
+      ['Bibliothèques', '#8B5E34', 'dot']
+    ];
+    doc.setFontSize(8); doc.setTextColor(60);
+    let lx = margin, col = 0;
+    legendItems.forEach(([label, color]) => {
+      doc.setFillColor(color);
+      doc.circle(lx + 1.5, ly - 1, 1.5, 'F');
+      doc.text(label, lx + 5, ly);
+      col++;
+      lx += 63;
+      if (col % 3 === 0) { lx = margin; ly += 6; }
+    });
+    ly += 12;
+
+    doc.setDrawColor(220); doc.line(margin, ly, pageW - margin, ly);
+
+    // ── VERSO — chiffres clés par thème ────
+    doc.addPage();
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(30, 34, 174);
+    doc.text('Chiffres clés — ' + cantonNom, margin, 18);
+
+    const blocks = [
+      ['Petite enfance', [
+        ['Établissements d\'accueil du jeune enfant', fmtCount(peEajeMapData && peEajeMapData.length)],
+        ['Lieux d\'accueil enfants-parents', fmtCount(peLaepMapData && peLaepMapData.length)],
+        ['Relais petite enfance', fmtCount(peRpeMapData && peRpeMapData.length)],
+        ['Maisons d\'assistants maternels', fmtCount(peMamMapData && peMamMapData.length)]
+      ]],
+      ['Collège', [
+        ['Collèges publics', fmtCount(collegeMapData && collegeMapData.publics.length)],
+        ['Collèges privés', fmtCount(collegeMapData && collegeMapData.prives.length)]
+      ]],
+      ['Social', [
+        ['CSS à proximité', fmtCount(cssMapData && cssMapData.length)],
+        ['MDS de rattachement', (mdsMapData && mdsMapData.name) || '—'],
+        ['Sites annexes MDS', fmtCount(annexesMapData && annexesMapData.length)]
+      ]],
+      ['Autonomie', [
+        ['Foyers d\'hébergement', fmtCount(fhMapData && fhMapData.length)],
+        ['Foyers de vie', fmtCount(fvMapData && fvMapData.length)],
+        ['CLIC', fmtCount(clicMapData && clicMapData.length)]
+      ]],
+      ['Environnement', [
+        ['Espaces naturels sensibles', fmtCount(ensGeojsonData && ensGeojsonData.features.length)],
+        ['Circuits de randonnée (PDIPR)', fmtCount(pdiprGeojsonData && pdiprGeojsonData.features.length)],
+        ['Écluses à proximité', fmtCount(eclusesMapData && eclusesMapData.length)]
+      ]],
+      ['Culture', [
+        ['Bibliothèques à proximité', fmtCount(biblioMapData && biblioMapData.length)],
+        ['Musées à proximité', fmtCount(museesMapData && museesMapData.length)]
+      ]]
+    ];
+
+    let by = 28;
+    blocks.forEach(([title, rows]) => {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 34, 174);
+      doc.text(title, margin, by);
+      by += 6;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(60);
+      rows.forEach(([label, value]) => {
+        doc.text(label, margin + 2, by);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(value), pageW - margin - 2, by, { align: 'right' });
+        doc.setFont('helvetica', 'normal');
+        by += 5.5;
+      });
+      by += 4;
+    });
+
+    doc.setFontSize(7.5); doc.setTextColor(150);
+    doc.text('Données : data.maine-et-loire.fr — Département de Maine-et-Loire', margin, 287);
+
+    doc.save('fiche-canton-' + cantonNom.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.pdf');
+  } catch (err) {
+    alert('Erreur lors de la génération du PDF : ' + err.message);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
 
 </script>
 </body>
