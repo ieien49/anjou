@@ -3392,10 +3392,16 @@ async function buildLocatorMapImage() {
 }
 
 async function buildCombinedMapImage() {
+  // Le conteneur doit avoir le même ratio largeur/hauteur que la zone
+  // d'insertion dans le PDF (voir doc.addImage plus bas dans generateFichePDF :
+  // w = pageW - margin*2 - 60 = 126mm, h = 92mm). Sinon jsPDF étire l'image
+  // de façon non uniforme et la carte paraît déformée.
+  const boxW = 126, boxH = 92; // mm — garder synchronisé avec generateFichePDF
+  const captureW = 900;
+  const captureH = Math.round(captureW * boxH / boxW);
   const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:760px;height:900px;background:#fff;';
-  document.body.appendChild(container);
-  const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
+  container.style.cssText = `position:fixed;left:-9999px;top:0;width:${captureW}px;height:${captureH}px;background:#fff;`;
+  document.body.appendChild(container);  const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
   map.fitBounds(L.geoJSON(currentCantonShape).getBounds(), { padding: [15, 15] });
 
   const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.08 } }).addTo(map);
