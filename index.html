@@ -3373,7 +3373,6 @@ async function buildLocatorMapImage() {
   container.style.cssText = 'position:fixed;left:-9999px;top:0;width:380px;height:380px;background:#fff;';
   document.body.appendChild(container);
   const map = L.map(container, { zoomControl: false, attributionControl: false, dragging: false, fadeAnimation: false });
-
   cantons.forEach(c => {
     const isCurrent = currentCantonCode && c.canton_code === currentCantonCode;
     L.geoJSON(c.geo_shape, {
@@ -3385,44 +3384,30 @@ async function buildLocatorMapImage() {
       }
     }).addTo(map);
   });
-
   const allLayer = L.geoJSON(cantons.map(c => c.geo_shape));
   map.fitBounds(allLayer.getBounds(), { padding: [4, 4] });
-
   await new Promise(r => setTimeout(r, 300));
-map.invalidateSize(false);
-const canvas = await html2canvas(container, {
-  backgroundColor: '#ffffff',
-  scale: 2,
-  scrollX: 0,
-  scrollY: 0,
-  foreignObjectRendering: true
-});
-	console.log('layers count:', Object.keys(map._layers).length);
-const rawCanvas = await captureLeafletMap(map);
-const canvas = document.createElement('canvas');
-canvas.width = rawCanvas.width;
-canvas.height = rawCanvas.height;
-const ctx = canvas.getContext('2d');
-ctx.fillStyle = '#ffffff';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ctx.drawImage(rawCanvas, 0, 0);
+  map.invalidateSize(false);
+  const canvas = await html2canvas(container, {
+    backgroundColor: '#ffffff',
+    scale: 2,
+    scrollX: 0,
+    scrollY: 0,
+    foreignObjectRendering: true
+  });
   map.remove();
   document.body.removeChild(container);
   return canvas.toDataURL('image/png');
 }
-
-async function buildCombinedMapImage() {
-  // Le conteneur doit avoir le même ratio largeur/hauteur que la zone
-  // d'insertion dans le PDF (voir doc.addImage plus bas dans generateFichePDF :
-  // w = pageW - margin*2 - 60 = 126mm, h = 92mm). Sinon jsPDF étire l'image
-  // de façon non uniforme et la carte paraît déformée.
-  const boxW = 126, boxH = 92; // mm — garder synchronisé avec generateFichePDF
+	
+	async function buildCombinedMapImage() {
+  const boxW = 126, boxH = 92;
   const captureW = 900;
   const captureH = Math.round(captureW * boxH / boxW);
   const container = document.createElement('div');
   container.style.cssText = `position:fixed;left:-9999px;top:0;width:${captureW}px;height:${captureH}px;background:#fff;`;
-  document.body.appendChild(container);  const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
+  document.body.appendChild(container);
+  const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
   map.fitBounds(L.geoJSON(currentCantonShape).getBounds(), { padding: [15, 15] });
 
   const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.08 } }).addTo(map);
@@ -3434,63 +3419,43 @@ async function buildCombinedMapImage() {
     L.geoJSON(routesGeojson, { style: { color: '#1E22AE', weight: 2.5, opacity: 0.85 } }).addTo(map);
   }
   inCanton(covoiturageData).forEach(o => marker(o, '#1A7A4A'));
-
   if (collegeMapData) {
     inCanton(collegeMapData.publics).forEach(o => marker(o, '#2E5BFF'));
     inCanton(collegeMapData.prives).forEach(o => marker(o, '#2E5BFF'));
   }
-
   if (mdsMapData && mdsMapData.lat != null && pointInGeometry([mdsMapData.lon, mdsMapData.lat], geom)) {
     marker(mdsMapData, '#C0392B');
   }
   inCanton(annexesMapData).forEach(o => marker(o, '#C0392B'));
-
   inCanton(cssMapData).forEach(o => marker(o, '#C8922A'));
-
   if (ensGeojsonData) {
     L.geoJSON(ensGeojsonData, {
       filter: f => { const gp = (f.properties || {}).geo_point_2d; return gp && pointInGeometry([gp.lon, gp.lat], geom); },
       pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 5, color: '#fff', weight: 1.5, fillColor: '#2E7D32', fillOpacity: 1 })
     }).addTo(map);
   }
-
   inCanton((eclusesMapData || []).map(r => r.geo_point_2d ? { lat: r.geo_point_2d.lat, lon: r.geo_point_2d.lon } : null))
     .forEach(o => marker(o, '#2E86AB'));
-
   if (dpfGeojsonData) {
     L.geoJSON(dpfGeojsonData, { style: { color: '#1565C0', weight: 2.5, opacity: 0.85 } }).addTo(map);
   }
-
   inCanton(biblioMapData).forEach(o => marker(o, '#8B5E34'));
 
-  // Masque : peint en blanc tout ce qui est hors du contour du canton
-  // (utile car routesGeojson et dpfGeojsonData débordent du polygone exact)
   const mask = buildMaskGeoJSON(currentCantonShape);
   if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#ffffff', fillOpacity: 1, stroke: false } }).addTo(map);
-
-  // Contour redessiné par-dessus le masque pour rester net
   L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fill: false } }).addTo(map);
 
   map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15] });
   await new Promise(r => setTimeout(r, 200));
-map.invalidateSize(false);
-const canvas = await html2canvas(container, {
-  backgroundColor: '#ffffff',
-  scale: 2,
-  scrollX: 0,
-  scrollY: 0,
-  foreignObjectRendering: true,
-  useCORS: true
-});
-	console.log('layers count:', Object.keys(map._layers).length);
-const rawCanvas = await captureLeafletMap(map);
-const canvas = document.createElement('canvas');
-canvas.width = rawCanvas.width;
-canvas.height = rawCanvas.height;
-const ctx = canvas.getContext('2d');
-ctx.fillStyle = '#ffffff';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ctx.drawImage(rawCanvas, 0, 0);
+  map.invalidateSize(false);
+  const canvas = await html2canvas(container, {
+    backgroundColor: '#ffffff',
+    scale: 2,
+    scrollX: 0,
+    scrollY: 0,
+    foreignObjectRendering: true,
+    useCORS: true
+  });
   map.remove();
   document.body.removeChild(container);
   return canvas.toDataURL('image/png');
