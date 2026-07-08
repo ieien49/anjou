@@ -6,6 +6,7 @@
 <title>ANJOU & MOI</title>
 <link rel="icon" type="image/png" href="https://www.maine-et-loire.fr/typo3conf/ext/ressource_maine-et-loire/img/icons/favicon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Marianne:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -3362,6 +3363,15 @@ function waitForTiles(map) {
   });
 }
 
+
+function captureLeafletMap(map) {
+  return new Promise((resolve, reject) => {
+    leafletImage(map, (err, canvas) => {
+      if (err) reject(err); else resolve(canvas);
+    });
+  });
+}
+	
 async function buildLocatorMapImage() {
   const cantons = await loadAllCantonsGeojson();
   const container = document.createElement('div');
@@ -3385,8 +3395,15 @@ async function buildLocatorMapImage() {
   map.fitBounds(allLayer.getBounds(), { padding: [4, 4] });
 
   await new Promise(r => setTimeout(r, 300));
-	map.invalidateSize(false);
-  const canvas = await html2canvas(container, { backgroundColor: '#ffffff', scale: 2, scrollX: 0, scrollY: 0 });
+map.invalidateSize(false);
+const rawCanvas = await captureLeafletMap(map);
+const canvas = document.createElement('canvas');
+canvas.width = rawCanvas.width;
+canvas.height = rawCanvas.height;
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#ffffff';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.drawImage(rawCanvas, 0, 0);
   map.remove();
   document.body.removeChild(container);
   return canvas.toDataURL('image/png');
@@ -3452,10 +3469,16 @@ async function buildCombinedMapImage() {
   L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fill: false } }).addTo(map);
 
   map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15] });
-  await waitForTiles(map);
   await new Promise(r => setTimeout(r, 200));
-	map.invalidateSize(false);
-  const canvas = await html2canvas(container, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+map.invalidateSize(false);
+const rawCanvas = await captureLeafletMap(map);
+const canvas = document.createElement('canvas');
+canvas.width = rawCanvas.width;
+canvas.height = rawCanvas.height;
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#ffffff';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.drawImage(rawCanvas, 0, 0);
   map.remove();
   document.body.removeChild(container);
   return canvas.toDataURL('image/png');
