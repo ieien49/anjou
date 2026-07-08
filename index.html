@@ -3396,6 +3396,11 @@ async function buildCombinedMapImage() {
   container.style.cssText = 'position:fixed;left:-9999px;top:0;width:760px;height:900px;background:#fff;';
   document.body.appendChild(container);
   const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
+
+  // Fixer une vue AVANT d'ajouter la moindre couche vectorielle,
+  // sinon le renderer SVG n'a pas de bounds et _clipPoints plante.
+  map.fitBounds(L.geoJSON(currentCantonShape).getBounds(), { padding: [15, 15] });
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, crossOrigin: true }).addTo(map);
 
   const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.08 } }).addTo(map);
