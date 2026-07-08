@@ -2932,9 +2932,7 @@ covoiturageData = covoiturageResults
 // Nouvelle fonction — construit la carte, appelée uniquement quand le conteneur est visible
 function buildRoutesMap() {
   if (routesMapBuilt || !routesGeojson || !currentCantonShape) return;
-  if (!routesGeojson.features.length) {
-    document.getElementById('routes-map-legend').innerHTML = 'Aucune route départementale recensée dans ce canton.';
-  }
+  
   const mapWrap = document.getElementById('routes-map-wrap');
   const legend = document.getElementById('routes-map-legend');
   mapWrap.style.display = 'block';
