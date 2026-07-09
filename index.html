@@ -3414,7 +3414,7 @@ async function buildLocatorMapImage() {
   const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.08 } }).addTo(map);
   const geom = geometryOf(currentCantonShape);
   const inCanton = (arr) => (arr || []).filter(o => o && o.lat != null && o.lon != null && pointInGeometry([o.lon, o.lat], geom));
-  const marker = (o, color) => L.circleMarker([o.lat, o.lon], { radius: 5, color: '#fff', weight: 1.5, fillColor: color, fillOpacity: 1 }).addTo(map);
+  const marker = (o, color) => L.circleMarker([o.lat, o.lon], { radius: 8, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1 }).addTo(map);
 
   if (routesGeojson && routesGeojson.features.length) {
     L.geoJSON(routesGeojson, { style: { color: '#1E22AE', weight: 2.5, opacity: 0.85 } }).addTo(map);
@@ -3432,7 +3432,7 @@ async function buildLocatorMapImage() {
   if (ensGeojsonData) {
     L.geoJSON(ensGeojsonData, {
       filter: f => { const gp = (f.properties || {}).geo_point_2d; return gp && pointInGeometry([gp.lon, gp.lat], geom); },
-      pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 5, color: '#fff', weight: 1.5, fillColor: '#2E7D32', fillOpacity: 1 })
+      pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 8, color: '#fff', weight: 2, fillColor: '#2E7D32', fillOpacity: 1 })
     }).addTo(map);
   }
   inCanton((eclusesMapData || []).map(r => r.geo_point_2d ? { lat: r.geo_point_2d.lat, lon: r.geo_point_2d.lon } : null))
@@ -3494,40 +3494,41 @@ async function generateFichePDF() {
     doc.text(cantonCode + '  ·  ' + pop + ' habitants  ·  ' + communes + ' communes', margin, 24);
     doc.text('Généré le ' + new Date().toLocaleDateString('fr-FR'), margin, 29);
 
-    doc.addImage(locatorImg, 'PNG', margin, 34, 55, 55);
-    doc.setFontSize(8); doc.setTextColor(120);
-    doc.text('Localisation dans le département', margin, 92);
+   doc.addImage(locatorImg, 'PNG', margin, 34, 55, 55);
+doc.setFontSize(8); doc.setTextColor(120);
+doc.text('Localisation dans le département', margin, 92);
 
-    doc.addImage(combinedImg, 'PNG', margin + 60, 34, pageW - margin * 2 - 60, 92);
+// Légende, à droite de la carte de situation
+const legendItems = [
+  ['Routes départementales', '#1E22AE', 'line'],
+  ['Aires de covoiturage', '#1A7A4A', 'dot'],
+  ['Collèges', '#2E5BFF', 'dot'],
+  ['MDS et annexes', '#C0392B', 'dot'],
+  ['CSS', '#C8922A', 'dot'],
+  ['Espaces naturels sensibles', '#2E7D32', 'dot'],
+  ['Écluses', '#2E86AB', 'dot'],
+  ['Domaine public fluvial', '#1565C0', 'line'],
+  ['Bibliothèques', '#8B5E34', 'dot']
+];
+doc.setFontSize(8); doc.setTextColor(60);
+const legendX = margin + 60, legendColW = (pageW - margin * 2 - 60) / 2;
+let lx = legendX, ly2 = 40, col = 0;
+legendItems.forEach(([label, color]) => {
+  doc.setFillColor(color);
+  doc.circle(lx + 1.5, ly2 - 1, 1.5, 'F');
+  doc.text(label, lx + 5, ly2);
+  col++;
+  if (col % 2 === 0) { lx = legendX; ly2 += 7; } else { lx = legendX + legendColW; }
+});
 
-    // Légende
-    let ly = 132;
-    const legendItems = [
-      ['Routes départementales', '#1E22AE', 'line'],
-      ['Aires de covoiturage', '#1A7A4A', 'dot'],
-      ['Collèges', '#2E5BFF', 'dot'],
-      ['MDS et annexes', '#C0392B', 'dot'],
-      ['CSS', '#C8922A', 'dot'],
-      ['Espaces naturels sensibles', '#2E7D32', 'dot'],
-      ['Écluses', '#2E86AB', 'dot'],
-      ['Domaine public fluvial', '#1565C0', 'line'],
-      ['Bibliothèques', '#8B5E34', 'dot']
-    ];
-    doc.setFontSize(8); doc.setTextColor(60);
-    let lx = margin, col = 0;
-    legendItems.forEach(([label, color]) => {
-      doc.setFillColor(color);
-      doc.circle(lx + 1.5, ly - 1, 1.5, 'F');
-      doc.text(label, lx + 5, ly);
-      col++;
-      lx += 63;
-      if (col % 3 === 0) { lx = margin; ly += 6; }
-    });
-    ly += 12;
+// Carte de détail du canton, pleine largeur, en dessous
+const combinedY = 97;
+const combinedW = pageW - margin * 2;
+const combinedH = combinedW * 92 / 126;
+doc.addImage(combinedImg, 'PNG', margin, combinedY, combinedW, combinedH);
 
-    doc.setDrawColor(220); doc.line(margin, ly, pageW - margin, ly);
-
-    // ── VERSO — chiffres clés par thème ────
+let ly = combinedY + combinedH + 8;
+doc.setDrawColor(220); doc.line(margin, ly, pageW - margin, ly);    // ── VERSO — chiffres clés par thème ────
     doc.addPage();
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(30, 34, 174);
     doc.text('Chiffres clés — ' + cantonNom, margin, 18);
