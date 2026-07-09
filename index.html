@@ -3388,12 +3388,13 @@ async function buildLocatorMapImage() {
   map.fitBounds(allLayer.getBounds(), { padding: [4, 4] });
   await new Promise(r => setTimeout(r, 300));
   map.invalidateSize(false);
+	forceSvgRepaint(map);
   const canvas = await html2canvas(container, {
     backgroundColor: '#ffffff',
     scale: 2,
     scrollX: 0,
     scrollY: 0,
-    foreignObjectRendering: true
+    foreignObjectRendering: false
   });
   map.remove();
   document.body.removeChild(container);
@@ -3448,12 +3449,13 @@ async function buildLocatorMapImage() {
   map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15] });
   await new Promise(r => setTimeout(r, 200));
   map.invalidateSize(false);
+		forceSvgRepaint(map);
   const canvas = await html2canvas(container, {
     backgroundColor: '#ffffff',
     scale: 2,
     scrollX: 0,
     scrollY: 0,
-    foreignObjectRendering: true,
+    foreignObjectRendering: false,
     useCORS: true
   });
   map.remove();
