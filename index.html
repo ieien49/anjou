@@ -3385,7 +3385,7 @@ async function buildLocatorMapImage() {
     }).addTo(map);
   });
   const allLayer = L.geoJSON(cantons.map(c => c.geo_shape));
-  map.fitBounds(allLayer.getBounds(), { padding: [4, 4] });
+  map.fitBounds(allLayer.getBounds(), { padding: [4, 4], animate: false });
   await new Promise(r => setTimeout(r, 300));
   map.invalidateSize(false);
 	forceSvgRepaint(map);
@@ -3409,7 +3409,7 @@ async function buildLocatorMapImage() {
   container.style.cssText = `position:fixed;left:-9999px;top:0;width:${captureW}px;height:${captureH}px;background:#fff;`;
   document.body.appendChild(container);
   const map = L.map(container, { zoomControl: false, attributionControl: false, fadeAnimation: false });
-  map.fitBounds(L.geoJSON(currentCantonShape).getBounds(), { padding: [15, 15] });
+  map.fitBounds(L.geoJSON(currentCantonShape).getBounds(), { padding: [15, 15], animate: false });
 
   const cantonLayer = L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fillColor: '#ECEDFB', fillOpacity: 0.08 } }).addTo(map);
   const geom = geometryOf(currentCantonShape);
@@ -3446,7 +3446,7 @@ async function buildLocatorMapImage() {
   if (mask) L.geoJSON(mask, { style: { color: 'none', fillColor: '#ffffff', fillOpacity: 1, stroke: false } }).addTo(map);
   L.geoJSON(currentCantonShape, { style: { color: '#1E22AE', weight: 1.5, fill: false } }).addTo(map);
 
-  map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15] });
+  map.fitBounds(cantonLayer.getBounds(), { padding: [15, 15], animate: false });
   await new Promise(r => setTimeout(r, 200));
   map.invalidateSize(false);
 		forceSvgRepaint(map);
